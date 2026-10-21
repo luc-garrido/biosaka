@@ -1,4 +1,34 @@
-# Esse cara vai ser o segurança da porta da API
+"""
+==============================================================================
+ARQUIVO: app/schemas.py
+PAPEL: "O Segurança da Porta / Contratos de Validação de Entrada e Saída"
+==============================================================================
+
+O QUE É ESTE ARQUIVO?
+Este arquivo define a "forma exata" dos dados que trafegam pela rede em formato JSON.
+Ele usa a biblioteca Pydantic (com BaseModel e Field).
+
+POR QUE ELE EXISTE SEPARADO?
+A internet não é um ambiente confiável. Se um usuário ou a balança enviar um texto
+no lugar de um número decimal de peso (ex: peso = "trinta"), o Python tradicional
+tentaria fazer contas e explodiria com um erro fatal 500.
+O schemas.py impede isso! Ele inspeciona a carga antes de deixá-la entrar no sistema.
+
+AS DUAS CATEGORIAS DE CONTRATOS (DTOs):
+
+1. CONTRATOS DE ENTRADA (...Input):
+   - O que o usuário ou o ESP32 envia.
+   - Não contém 'id' (porque o id é gerado pelo banco depois que grava).
+   - Exemplos: ColmeiaInput, LeituraInput, ManejoInput.
+
+2. CONTRATOS DE SAÍDA (...Output):
+   - O que a nossa API devolve como resposta JSON para o aplicativo no celular.
+   - Herda do Input e ganha campos novos gerados pelo servidor (ex: o 'id' e a data).
+   - Usa a configuração especial: model_config = {"from_attributes": True}, que
+     ensina o Pydantic a ler os objetos vindos do SQLAlchemy no banco.py e transformá-los
+     automaticamente em JSON!
+==============================================================================
+"""
 from pydantic import BaseModel, Field 
 from datetime import datetime 
 from typing import Optional
