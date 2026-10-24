@@ -57,6 +57,24 @@ CREATE TABLE IF NOT EXISTS alertas (
     CONSTRAINT fk_alerta_colmeia FOREIGN KEY (colmeia_id) REFERENCES colmeias(id) ON DELETE CASCADE
 );
 
+-- Lucas e Henrique, verifiquem se é isso que eu preciso fazer: 
+
+-- CREATE TABLE IF NOT EXISTS leituras_peso (
+--   id INT AUTO_INCREMENT PRIMARY KEY,
+--   colmeia_id INT NOT NULL,
+--   peso_kg DECIMAL(5,2) NOT NULL,
+--   data_leitura DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--   CONSTRAINT fk_leitura_colmeia FOREIGN KEY (colmeia_id)
+--       REFERENCES colmeias(id)
+--       ON DELETE CASCADE
+--       ON UPDATE CASCADE,
+--   INDEX idx_leitura_colmeia_data (colmeia_id, data_leitura)
+-- );
+
+-- Usei o claude para verificar se o que eu fiz estava certo e ele deu ok, mas permaneço em duvida
+
+
+
 -------------------------------------------------------------
 -- OBSERVAÇÕES
 
