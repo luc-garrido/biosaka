@@ -1,0 +1,8 @@
+OK: cadeia usuario -> apiario -> colmeia -> serie -> leitura; timestamp repetido e valor ausente preservados.
+OK: telefone unico
+OK: codigo unico por apiario
+OK: chave estrangeira
+OK: exclusao restringida
+OK: tara nao negativa
+OK: linha unica da serie
+OK: nenhum registro temporario permaneceu no banco.

@@ -34,7 +34,7 @@ O QUE ESTE ARQUIVO FAZ NA PRÁTICA:
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from app.motor.tipos import LeituraPura, FeaturesSinal
+from .tipos import LeituraPura, FeaturesSinal
 
 def limpar_leituras_invalidas(leituras):
    leituras_validas = []

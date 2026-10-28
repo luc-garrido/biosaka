@@ -1,90 +1,106 @@
-"""
-==============================================================================
-ARQUIVO: app/schemas.py
-PAPEL: "O Segurança da Porta / Contratos de Validação de Entrada e Saída"
-==============================================================================
+from datetime import date, datetime
+from decimal import Decimal
+from typing import Annotated, Literal
 
-O QUE É ESTE ARQUIVO?
-Este arquivo define a "forma exata" dos dados que trafegam pela rede em formato JSON.
-Ele usa a biblioteca Pydantic (com BaseModel e Field).
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, SecretStr, field_validator
 
-POR QUE ELE EXISTE SEPARADO?
-A internet não é um ambiente confiável. Se um usuário ou a balança enviar um texto
-no lugar de um número decimal de peso (ex: peso = "trinta"), o Python tradicional
-tentaria fazer contas e explodiria com um erro fatal 500.
-O schemas.py impede isso! Ele inspeciona a carga antes de deixá-la entrar no sistema.
+ID = Annotated[int, Field(gt=0, strict=True)]
+Nome = Annotated[str, Field(min_length=1, max_length=120)]
 
-AS DUAS CATEGORIAS DE CONTRATOS (DTOs):
 
-1. CONTRATOS DE ENTRADA (...Input):
-   - O que o usuário ou o ESP32 envia.
-   - Não contém 'id' (porque o id é gerado pelo banco depois que grava).
-   - Exemplos: ColmeiaInput, LeituraInput, ManejoInput.
+class Entrada(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, allow_inf_nan=False)
 
-2. CONTRATOS DE SAÍDA (...Output):
-   - O que a nossa API devolve como resposta JSON para o aplicativo no celular.
-   - Herda do Input e ganha campos novos gerados pelo servidor (ex: o 'id' e a data).
-   - Usa a configuração especial: model_config = {"from_attributes": True}, que
-     ensina o Pydantic a ler os objetos vindos do SQLAlchemy no banco.py e transformá-los
-     automaticamente em JSON!
-==============================================================================
-"""
-from pydantic import BaseModel, Field 
-from datetime import datetime 
-from typing import Optional
-from enum import Enum
 
-class TipoManejo(str, Enum):
-    ALIMENTACAO = "ALIMENTACAO"
-    COLHEITA = "COLHEITA"
-    REVISAO = "REVISAO"
-    OUTRO = "OUTRO"
+class UsuarioInput(Entrada):
+    nome: Nome
+    telefone: Annotated[str, Field(pattern=r"^\+[1-9][0-9]{7,14}$")]
+    email: EmailStr | None = None
+    senha: SecretStr = Field(min_length=8, max_length=128)
 
-# Leitura da Colmeia
 
-class ColmeiaInput(BaseModel):
-    # Aqui nos não fazemos como um POO normal pq o pydantic ja faz isso e muito mais com o BaseModel
-    nome: str = Field(..., examples = ["Colmeia 1 - Matriz"])
-    localizacao: str = Field(...)
-    peso_tara_kg: float = Field(..., examples = [4.5])
-    especie_abelha: str = Field(..., examples = ["Apis Mellifera"])
-    observacoes: Optional[str] = Field(None, examples = ["Colmeia produtiva"])
-    
+class UsuarioOutput(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    nome: str
+    telefone: str
+    email: str | None
+
+
+class ApiarioInput(Entrada):
+    usuario_id: ID
+    nome: Nome
+    localizacao: Annotated[str, Field(max_length=255)] | None = None
+
+
+class ApiarioOutput(ApiarioInput):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+
+
+class ColmeiaInput(Entrada):
+    apiario_id: ID
+    codigo: Annotated[str, Field(min_length=1, max_length=50)]
+    data_instalacao: date | None = None
+    situacao: Literal["ativa", "em_observacao", "inativa"] = "ativa"
+    especie_abelha: Annotated[str, Field(max_length=80)] | None = None
+    origem_rainha: Annotated[str, Field(max_length=120)] | None = None
+    data_introducao_rainha: date | None = None
+    peso_tara_kg: Annotated[Decimal, Field(ge=0, max_digits=10, decimal_places=3)] | None = None
+
+
 class ColmeiaOutput(ColmeiaInput):
-    id: int = Field(...,examples=[1])
-    data_cadastro_colmeia: datetime = Field(default_factory=datetime.now)
-    # Faz o python ler o que o banco manda 
-    model_config = {"from_attributes":True}
+    model_config = ConfigDict(from_attributes=True)
+    id: int
 
-# Leitura da Balança
 
-class LeituraInput(BaseModel):
-    colmeia_id: int = Field(..., examples=[1])
-    peso_bruto: float = Field(..., examples=[32.5])
-    data_leitura_peso: datetime = Field(default_factory=datetime.now)
+class InspecaoInput(Entrada):
+    colmeia_id: ID
+    data_inspecao: date
+    forca_enxame: Literal["fraca", "media", "forte", "nao_avaliada"] = "nao_avaliada"
+    postura: Literal["observada", "nao_observada", "nao_avaliada"] = "nao_avaliada"
+    reserva_alimentar: Literal["baixa", "adequada", "nao_avaliada"] = "nao_avaliada"
+    observacoes: Annotated[str, Field(max_length=2000)] = ""
 
-class LeituraOutput(LeituraInput):
-    id: int = Field(..., examples=[2])
-    model_config = {"from_attributes":True}
+    @field_validator("data_inspecao")
+    @classmethod
+    def rejeitar_futuro(cls, valor):
+        if valor > date.today():
+            raise ValueError("Data de inspecao nao pode estar no futuro.")
+        return valor
 
-# Status (Os dados vão chegar do regras.py)
 
-class StatusOutput(BaseModel):
-    colmeia_id: int = Field(..., examples = [1])
-    semaforo: str = Field(..., examples=["VERDE", "AMARELO", "VERMELHO"])
-    status_escrito: str = Field(..., examples=["Tudo tranquilo. A colmeia esta saudavel e com boas reservas"])
-    peso_atual_kg: float = Field(..., examples = [27.5])
-    data_avaliacao: datetime = Field(default_factory=datetime.now)
-    model_config = {"from_attributes":True}
+class InspecaoOutput(InspecaoInput):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
 
-class ManejoInput(BaseModel):
-    colmeia_id: int = Field(..., examples=[5])
-    tipo_manejo: TipoManejo = Field(..., examples=[TipoManejo.ALIMENTACAO]) # Nesse campo acho melhor deixar opçoes e nao digitar 
-    descricao: Optional[str] = Field(None, examples = ["Adição de núcleo"])
-    data_manejo: datetime = Field(default_factory=datetime.now)
-    delta_peso_esperado: Optional[float] = Field(None, examples = [2.5])
-    
-class ManejoOutput(ManejoInput):
-    id: int = Field(..., examples = [4])
-    model_config = {"from_attributes":True}
-    
+
+class SerieOutput(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    colmeia_id: int
+    codigo: str
+    metrica: str
+    fonte_url: str
+    arquivo_origem: str
+    sha256_arquivo: str
+    unidade_original: str | None
+    fuso_original: str | None
+
+
+class LeituraOutput(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    serie_id: int
+    instante_original: datetime
+    valor_original: Decimal | None
+    texto_valor_original: str | None
+    linha_origem: int
+
+
+class PaginaLeituras(BaseModel):
+    serie: SerieOutput
+    total: int
+    limite: int
+    offset: int
+    itens: list[LeituraOutput]

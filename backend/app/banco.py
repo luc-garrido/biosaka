@@ -1,107 +1,96 @@
-"""
-==============================================================================
-ARQUIVO: app/banco.py
-PAPEL: "A Despensa / O Livro de Registros Permanentes (MySQL via SQLAlchemy)"
-==============================================================================
+"""Mapeamento das seis tabelas. DDL oficial em database/v3/."""
+from datetime import date, datetime
+from decimal import Decimal
 
-O QUE É ESTE ARQUIVO?
-Este arquivo é a ponte entre a nossa aplicação Python e o servidor de banco de dados
-MySQL. Ele usa o SQLAlchemy (um ORM - Object-Relational Mapper).
+from sqlalchemy import CheckConstraint, Date, DateTime, ForeignKey, Index, Numeric, String, UniqueConstraint, create_engine, text
+from sqlalchemy.dialects.mysql import BIGINT, CHAR, ENUM, INTEGER, TIMESTAMP
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
-POR QUE ELE EXISTE SEPARADO?
-Se você guardar informações apenas em variáveis Python normais, assim que o servidor
-for desligado ou reiniciar, TUDO É PERDIDO.
-Este arquivo garante que todas as colmeias cadastradas, pesos da balança e alertas
-sejam gravados de forma segura e permanente no disco rígido do MySQL.
+from .config import DATABASE_URL
 
-AS DUAS GRANDES PARTES DESTE ARQUIVO:
+engine = create_engine(DATABASE_URL, pool_pre_ping=True, connect_args={"init_command": "SET time_zone = '+00:00'"})
+SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 
-1. INFRAESTRUTURA DE CONEXÃO:
-   - DATABASE_URL: O endereço no GPS com usuário, senha, porta e nome do banco.
-   - engine: A "estrada/central telefônica" que gerencia as conexões físicas de rede.
-   - SessionLocal: A "fábrica de atendimentos" (cada requisição ganha um rascunho de sessão).
-   - get_db(): A função com 'yield' que empresta uma sessão aberta para a rota e garante
-     que ela seja fechada no final, evitando travar o MySQL por falta de conexões.
 
-2. MODELOS DE TABELA (Classes ORM):
-   - Em vez de escrever comandos SQL crus ("CREATE TABLE colmeias ..."), criamos
-     classes Python herdando de 'Base'.
-   - O SQLAlchemy traduz essas classes em tabelas reais com chaves primárias e tipos.
-==============================================================================
-"""
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text, Boolean, DECIMAL
-from sqlalchemy.orm import sessionmaker, declarative_base
-from datetime import datetime
+class Base(DeclarativeBase):
+    pass
 
-DATABASE_URL = 'A URL do banco (Quando eu tiver acesso)'
-
-engine = create_engine(DATABASE_URL)
-# Abrir uma conexão de rede com o MySQL é um processo pesado e lento. O engine cria o que chamamos de Pool de Conexões: 
-# ele mantém algumas conexões pré-aquecidas e abertas, gerenciando o tráfego pesado para que a API seja ultrarrápida.
-
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-# 1. Não salva automaticamente a cada linha de código (autocommit=False)
-# 2. Não envia comandos duplicados para o banco (autoflush=False)
-# 3. Usa a conexão gerada pelo nosso engine (bind=engine)
-
-Base = declarative_base()
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-class Colmeia(Base):
-    __tablename__ = 'colmeias'
-
-    id = Column(Integer, primary_key=True, index=True)
-    apiario_id = Column(Integer, nullable=False)  
-    codigo_identificacao = Column(String(20), nullable=False)  
-    especie_abelha = Column(String(80), nullable=True)
-    data_instalacao = Column(DateTime, default=datetime.now)
-    status = Column(String(20), default="ATIVA")
-    peso_tara_kg = Column(Float, default=0.0)  
 
 class Usuario(Base):
-    __tablename__ = 'usuarios'
+    __tablename__ = "usuarios"
+    id: Mapped[int] = mapped_column(BIGINT(unsigned=True), primary_key=True)
+    nome: Mapped[str] = mapped_column(String(120))
+    telefone: Mapped[str] = mapped_column(String(16), unique=True)
+    email: Mapped[str | None] = mapped_column(String(254), unique=True)
+    senha_hash: Mapped[str] = mapped_column(String(255))
+    criado_em: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
 
-    id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String(100), nullable=False)
-    email = Column(String(120), unique=True, nullable=False)
-    senha_hash = Column(String(255), nullable=False)
-    data_cadastro = Column(DateTime, default=datetime.now)
 
 class Apiario(Base):
-    __tablename__ = 'apiarios'
+    __tablename__ = "apiarios"
+    id: Mapped[int] = mapped_column(BIGINT(unsigned=True), primary_key=True)
+    usuario_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="RESTRICT", onupdate="RESTRICT"))
+    nome: Mapped[str] = mapped_column(String(120))
+    localizacao: Mapped[str | None] = mapped_column(String(255))
+    criado_em: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
 
-    id = Column(Integer, primary_key=True, index=True)
-    usuario_id = Column(Integer, nullable=False)
-    nome = Column(String(100), nullable=False)
-    localizacao = Column(String(200))
-    data_criacao = Column(DateTime, default=datetime.now)
-    
+
+class Colmeia(Base):
+    __tablename__ = "colmeias"
+    __table_args__ = (UniqueConstraint("apiario_id", "codigo"), CheckConstraint("peso_tara_kg IS NULL OR peso_tara_kg >= 0"))
+    id: Mapped[int] = mapped_column(BIGINT(unsigned=True), primary_key=True)
+    apiario_id: Mapped[int] = mapped_column(ForeignKey("apiarios.id", ondelete="RESTRICT", onupdate="RESTRICT"))
+    codigo: Mapped[str] = mapped_column(String(50))
+    data_instalacao: Mapped[date | None] = mapped_column(Date)
+    situacao: Mapped[str] = mapped_column(ENUM("ativa", "em_observacao", "inativa"), server_default="ativa")
+    especie_abelha: Mapped[str | None] = mapped_column(String(80))
+    origem_rainha: Mapped[str | None] = mapped_column(String(120))
+    data_introducao_rainha: Mapped[date | None] = mapped_column(Date)
+    peso_tara_kg: Mapped[Decimal | None] = mapped_column(Numeric(10, 3))
+    criado_em: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
+
+
 class Inspecao(Base):
-    __tablename__ = 'inspecoes'
+    __tablename__ = "inspecoes"
+    __table_args__ = (Index("idx_inspecoes_colmeia_data", "colmeia_id", "data_inspecao", "id"),)
+    id: Mapped[int] = mapped_column(BIGINT(unsigned=True), primary_key=True)
+    colmeia_id: Mapped[int] = mapped_column(ForeignKey("colmeias.id", ondelete="RESTRICT", onupdate="RESTRICT"))
+    data_inspecao: Mapped[date] = mapped_column(Date)
+    forca_enxame: Mapped[str] = mapped_column(ENUM("fraca", "media", "forte", "nao_avaliada"), server_default="nao_avaliada")
+    postura: Mapped[str] = mapped_column(ENUM("observada", "nao_observada", "nao_avaliada"), server_default="nao_avaliada")
+    reserva_alimentar: Mapped[str] = mapped_column(ENUM("baixa", "adequada", "nao_avaliada"), server_default="nao_avaliada")
+    observacoes: Mapped[str] = mapped_column(String(2000), server_default="")
+    criado_em: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
 
-    id = Column(Integer, primary_key=True, index=True)
-    colmeia_id = Column(Integer, nullable=False)
-    data_inspecao = Column(DateTime, default=datetime.now)
-    peso_kg = Column(DECIMAL(5,2), nullable=False)
-    presenca_rainha = Column(Boolean, default=True)
-    nivel_populacao = Column(String(20), default='ALTO')
-    reserva_alimento = Column(String(20), default='SUFICIENTE')
-    sinais_pragas = Column(Boolean, default=False)
-    observacoes = Column(Text)
 
-class Alerta(Base):
-    __tablename__ = 'alertas'
+class SerieDataset(Base):
+    __tablename__ = "series_dataset"
+    id: Mapped[int] = mapped_column(BIGINT(unsigned=True), primary_key=True)
+    colmeia_id: Mapped[int] = mapped_column(ForeignKey("colmeias.id", ondelete="RESTRICT", onupdate="RESTRICT"))
+    codigo: Mapped[str] = mapped_column(String(100), unique=True)
+    metrica: Mapped[str] = mapped_column(ENUM("weight", "temperature", "humidity", "flow"))
+    fonte_url: Mapped[str] = mapped_column(String(500))
+    arquivo_origem: Mapped[str] = mapped_column(String(255))
+    sha256_arquivo: Mapped[str] = mapped_column(CHAR(64))
+    unidade_original: Mapped[str | None] = mapped_column(String(40))
+    fuso_original: Mapped[str | None] = mapped_column(String(64))
+    criado_em: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
 
-    id = Column(Integer, primary_key=True, index=True)
-    colmeia_id = Column(Integer, nullable=False)
-    tipo_alerta = Column(String(50), nullable=False)
-    descricao = Column(String(255), nullable=False) 
-    gravidade = Column(String(20), default='MEDIA')
-    data_criacao = Column(DateTime, default=datetime.now)
-    resolvido = Column(Boolean, default=False)   
+
+class Leitura(Base):
+    __tablename__ = "leituras"
+    __table_args__ = (UniqueConstraint("serie_id", "linha_origem"),
+                      Index("idx_leituras_serie_instante", "serie_id", "instante_original", "id"),
+                      CheckConstraint("linha_origem >= 2"))
+    id: Mapped[int] = mapped_column(BIGINT(unsigned=True), primary_key=True)
+    serie_id: Mapped[int] = mapped_column(ForeignKey("series_dataset.id", ondelete="RESTRICT", onupdate="RESTRICT"))
+    instante_original: Mapped[datetime] = mapped_column(DateTime)
+    valor_original: Mapped[Decimal | None] = mapped_column(Numeric(24, 12))
+    texto_valor_original: Mapped[str | None] = mapped_column(String(100))
+    linha_origem: Mapped[int] = mapped_column(INTEGER(unsigned=True))
+    importado_em: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
+
+
+def get_db():
+    with SessionLocal() as db:
+        yield db

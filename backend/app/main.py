@@ -1,52 +1,25 @@
-"""
-==============================================================================
-ARQUIVO: app/main.py
-PAPEL: "A Chave de Ignição / O Ponto de Entrada da Aplicação"
-==============================================================================
-
-O QUE É ESTE ARQUIVO?
-Este é o primeiro arquivo que o Python lê quando você digita o comando para iniciar
-o servidor (ex: uvicorn app.main:app --reload). Ele é o ponto de partida de tudo.
-
-POR QUE ELE EXISTE SEPARADO?
-Em vez de misturar código de banco, rotas e regras aqui dentro, o main.py funciona
-apenas como um organizador que aperta o botão de "Ligar" e conecta os módulos.
-
-O QUE ELE FAZ NA PRÁTICA:
-1. Cria a aplicação FastAPI: app = FastAPI(title="Biosaka API", ...).
-2. Configura o CORS (Cross-Origin Resource Sharing):
-   - Por segurança, os navegadores impedem que uma página web (ex: seu frontend React
-     rodando na porta 5173 ou 3000) converse com uma API que está na porta 8000.
-   - O CORS é o middleware que avisa ao navegador: "Pode confiar, libere as
-     requisições que vierem do frontend do Biosaka".
-3. Registra as Rotas: ele importa o arquivo 'rotas.py' e pluga na aplicação com
-   app.include_router(...), fazendo com que todos os links fiquem ativos.
-4. Ciclo de Vida (Lifespan): quando o servidor liga, ele pode conferir se as tabelas
-   do banco de dados estão prontas; e quando desliga, fecha conexões pendentes.
-==============================================================================
-"""
-from rotas import roteador
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI
-from contextlib import asynccontextmanager
-from app.banco import Base, engine
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    Base.metadata.create_all(bind=engine)
-    yield
+from .config import CORS_ORIGINS
+from .rotas import roteador
 
-site = FastAPI(
-    title="Biosaka API",
-    description="Backend para monitoramento de colmeias",
-    version="1.0.0",
-    lifespan=lifespan, 
-)
+site = FastAPI(title="BIOSAKA API", version="0.3.0",
+               description="API administrativa local. Seis tabelas, MySQL e Beehive Metrics.")
+site.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS,
+                    allow_credentials=False, allow_methods=["GET", "POST", "PUT", "DELETE"],
+                    allow_headers=["Content-Type", "X-API-Key"])
+site.include_router(roteador)
+app = site
 
-site.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
+@site.exception_handler(IntegrityError)
+async def conflito(request: Request, erro: IntegrityError):
+    return JSONResponse(status_code=409, content={"detail": "Registro duplicado ou possui dependencias. Confira os relacionamentos."})
+
+
+@site.exception_handler(SQLAlchemyError)
+async def banco_indisponivel(request: Request, erro: SQLAlchemyError):
+    return JSONResponse(status_code=503, content={"detail": "Banco indisponivel ou esquema incompativel. Confira a configuracao e database/v3/."})
