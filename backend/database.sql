@@ -59,29 +59,26 @@ CREATE TABLE IF NOT EXISTS alertas (
 
 -- Lucas e Henrique, verifiquem se é isso que eu preciso fazer: 
 
--- CREATE TABLE IF NOT EXISTS leituras_peso (
---   id INT AUTO_INCREMENT PRIMARY KEY,
---   colmeia_id INT NOT NULL,
---   peso_kg DECIMAL(5,2) NOT NULL,
---   data_leitura DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
---   CONSTRAINT fk_leitura_colmeia FOREIGN KEY (colmeia_id)
---       REFERENCES colmeias(id)
---       ON DELETE CASCADE
---       ON UPDATE CASCADE,
---   INDEX idx_leitura_colmeia_data (colmeia_id, data_leitura)
--- );
-
--- Usei o claude para verificar se o que eu fiz estava certo e ele deu ok, mas permaneço em duvida
+CREATE TABLE IF NOT EXISTS leituras_peso (
+   id INT AUTO_INCREMENT PRIMARY KEY,
+   colmeia_id INT NOT NULL,
+   peso_kg DECIMAL(5,2) NOT NULL,
+   data_leitura DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   CONSTRAINT fk_leitura_colmeia FOREIGN KEY (colmeia_id)
+       REFERENCES colmeias(id)
+       ON DELETE CASCADE
+       ON UPDATE CASCADE,
+   INDEX idx_leitura_colmeia_data (colmeia_id, data_leitura)
+ );
 
 
 
--------------------------------------------------------------
--- OBSERVAÇÕES
+/*OBSERVAÇÕES
 
--- Dados sobre o que existe dentro da colmeia devem pertencer a tabela COLMEIA, exemplo: Peso, rainha, população, etc. 
+Dados sobre o que existe dentro da colmeia devem pertencer a tabela COLMEIA, exemplo: Peso, rainha, população, etc. 
 
--- A tabela INSPEÇÕES deve conter resultados do nosso back, exemplo: Colheita (true ou false) que se baseia nas informações da colmeia + data da colheita.
--- Saude da colmeia que é um resultado do back em uma condicional entre inforamções base da tabela colmeia, etc.
+A tabela INSPEÇÕES deve conter resultados do nosso back, exemplo: Colheita (true ou false) que se baseia nas informações da colmeia + data da colheita.
+Saude da colmeia que é um resultado do back em uma condicional entre inforamções base da tabela colmeia, etc.
 
--- Montar um arquivo no molde de ARQUITETURA.md que descreva todas as tabelas, colunas, etc. Pense que precisa ser facil de interpretar o que tem no dataset
--- mesmo sem saber nada de código ou de banco de dados. 
+Montar um arquivo no molde de ARQUITETURA.md que descreva todas as tabelas, colunas, etc. Pense que precisa ser facil de interpretar o que tem no dataset
+mesmo sem saber nada de código ou de banco de dados. */
