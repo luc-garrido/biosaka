@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biosaka - Detalhes das colmeias</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/colmeias.css">
+
+  <link rel="stylesheet" href="css/detalhes.css">
+</head>
+
+<body>
+
+  <!-- ========== CABEÇALHO ========== -->
+  <header>
+    <span>🐝 Biosaka</span>
+    <a href="login.html" id="sair">Desconectar</a>
+  </header>
+
+  <main>
+
+    <!-- ========== DETALHES DAS COLMEIAS ========== -->
+    <a class="voltar" href="colmeias.html" data-voltar>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H4" /><path d="M11 5l-7 7 7 7" /></svg>
+      Voltar
+    </a>
+
+    <h1 id="titulo">Detalhes das colmeias</h1>
+    <p class="suave" id="subtitulo">Leituras do sensor, histórico e recomendações de cada colmeia.</p>
+
+    <div id="detalhes" class="detalhes"></div>
+
+  </main>
+
+  <script src="js/voltar.js"></script>
+
+  <script src="js/auth.js"></script>
+
+  <script src="js/dados.js"></script>
+
+  <script src="js/detalhes.js"></script>
+
+</body>
+
+</html>

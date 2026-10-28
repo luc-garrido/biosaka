@@ -1,0 +1,334 @@
+/* Biosaka - Estilos da tela de colmeias */
+
+
+/* ---------- Cores do projeto ---------- */
+:root {
+  --ambar: #E8960C;
+  --escuro: #B87408;
+  --suave: #6B6252;
+  --borda: #E6DCC8;
+  --verde: #2E7D4F;
+  --vermelho: #C0392B;
+}
+
+
+/* ---------- Configurações gerais ---------- */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font: 18px/1.4 "Inter", system-ui, sans-serif;
+  background: #FFF8EC;
+  color: #2A2112;
+}
+
+header {
+  background: #fff;
+  border-bottom: 1px solid var(--borda);
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+}
+
+header a {
+  color: inherit;
+  text-decoration: none;
+}
+
+main {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+h1 {
+  margin: 0 0 4px;
+  font-size: 34px;
+}
+
+.suave {
+  color: var(--suave);
+  margin: 0 0 24px;
+}
+
+
+/* ---------- Botões ---------- */
+button,
+.botao-link {
+  font: inherit;
+  font-weight: 700;
+  border: 0;
+  border-radius: 12px;
+  padding: 14px 24px;
+  min-height: 52px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.primario {
+  background: var(--ambar);
+  color: #fff;
+}
+
+.primario:hover:not(:disabled) {
+  background: var(--escuro);
+}
+
+.secundario {
+  background: none;
+  color: var(--escuro);
+  box-shadow: inset 0 0 0 2px var(--ambar);
+}
+
+.secundario:hover {
+  background: #FEF1D0;
+}
+
+.botao-link {
+  text-decoration: none;
+}
+
+.link {
+  background: none;
+  color: var(--suave);
+  padding: 8px 0;
+  min-height: 0;
+}
+
+/* Botão/link de voltar com seta grossa (o traço é definido no SVG) */
+.voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  color: var(--escuro);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 8px 14px 8px 8px;
+  min-height: 0;
+  margin-bottom: 16px;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.voltar:hover {
+  background: #FEF1D0;
+}
+
+.voltar svg {
+  flex: none;
+}
+
+button:disabled {
+  opacity: .7;
+  cursor: not-allowed;
+}
+
+
+/* ---------- Tela 1: listagem ---------- */
+.barra {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.card,
+.vazio,
+.form {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(80, 60, 20, .08);
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.card small {
+  color: var(--escuro);
+  font-size: 16px;
+}
+
+.card p {
+  margin: 6px 0 18px;
+  color: var(--suave);
+  font-size: 15px;
+}
+
+
+/* ---------- Status da colmeia ---------- */
+.status {
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.pronta {
+  background: #E6F4EA;
+  color: var(--verde);
+}
+
+.aguardar {
+  background: #FBE9E7;
+  color: var(--vermelho);
+}
+
+.sem-dados {
+  background: #EEEAE2;
+  color: var(--suave);
+}
+
+
+/* ---------- Carregamento da lista com cards esqueleto ---------- */
+.sk {
+  height: 22px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  background: linear-gradient(90deg, #eee6d6 25%, #f7f1e4 50%, #eee6d6 75%);
+  background-size: 200% 100%;
+  animation: brilho 1.2s infinite;
+}
+
+@keyframes brilho {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+
+/* ---------- Estado vazio ---------- */
+.vazio {
+  text-align: center;
+  padding: 48px 24px;
+  grid-column: 1 / -1;
+}
+
+
+/* ---------- Tela 2: formulário ---------- */
+.form {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+label {
+  display: block;
+  font-weight: 700;
+  margin: 20px 0 6px;
+}
+
+input,
+select {
+  width: 100%;
+  font: inherit;
+  padding: 13px 14px;
+  border: 2px solid var(--borda);
+  border-radius: 10px;
+}
+
+input:focus,
+select:focus {
+  outline: 0;
+  border-color: var(--ambar);
+}
+
+[aria-invalid] {
+  border-color: var(--vermelho);
+}
+
+.erro {
+  color: var(--vermelho);
+  font-size: 15px;
+  font-weight: 600;
+  margin: 6px 0 0;
+}
+
+.acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 28px;
+}
+
+
+/* ---------- Spinner do botão "Salvando..." ---------- */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, .45);
+  border-top-color: #fff;
+  animation: gira .7s linear infinite;
+}
+
+@keyframes gira {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* ---------- Mensagem de sucesso ou erro ---------- */
+#toast {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+}
+
+
+/* ---------- Elementos escondidos ---------- */
+[hidden] {
+  display: none !important;
+}
+
+
+/* ---------- Celular: lista em 1 coluna ---------- */
+@media (max-width: 700px) {
+  .grade {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ---------- Próximo passo (com data sugerida) ---------- */
+.proximo {
+  color: var(--suave);
+}
+
+.proximo strong {
+  color: #2A2112;
+}
+
+/* Cards com a mesma altura: "Ver detalhes" fica sempre no rodapé do card */
+.card {
+  display: flex;
+  flex-direction: column;
+}
+
+.card .botao-link {
+  margin-top: auto;
+}

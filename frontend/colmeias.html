@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biosaka - Minhas colmeias</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/colmeias.css">
+</head>
+
+<body>
+
+  <!-- ========== CABEÇALHO ========== -->
+  <header>
+    <span>🐝 Biosaka</span>
+    <a href="login.html" id="sair">Desconectar</a>
+  </header>
+
+  <div id="toast" hidden role="status"></div>
+
+  <main>
+
+    <!-- ========== TELA 1: LISTAGEM DE COLMEIAS ========== -->
+    <section id="tela-lista">
+      <a class="voltar" href="index.html">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H4" /><path d="M11 5l-7 7 7 7" /></svg>
+        Voltar
+      </a>
+
+      <h1>Olá, <span id="nome-usuario">Eduardo</span></h1>
+      <p class="suave">Suas colmeias ativas:</p>
+
+      <div class="barra">
+        <a class="botao-link secundario" href="detalhes.html">Mais detalhes</a>
+        <button class="primario" onclick="abrirForm()">+ Nova colmeia</button>
+      </div>
+
+      <div id="lista" class="grade"></div>
+    </section>
+
+    <!-- ========== TELA 2: CADASTRO DE NOVA COLMEIA ========== -->
+    <section id="tela-form" hidden>
+
+      <button class="voltar" onclick="mostrar('lista')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H4" /><path d="M11 5l-7 7 7 7" /></svg>
+        Voltar para as colmeias
+      </button>
+
+      <form class="form" id="form" novalidate>
+        <h1>Cadastrar nova colmeia</h1>
+
+        <label for="codigo">Código da colmeia</label>
+        <input id="codigo" placeholder="Ex.: COL-004" autocomplete="off">
+        <p class="erro" id="erro-codigo"></p>
+
+        <label for="especie">Espécie</label>
+        <select id="especie">
+          <option value="">Selecione a espécie</option>
+          <option>Abelha-europeia (Apis Mellifera)</option>
+          <option>Mandaçaia (Melipona Quadrifasciata)</option>
+          <option>Jataí (Tetragonisca Angustula)</option>
+        </select>
+        <p class="erro" id="erro-especie"></p>
+
+        <label for="cidade">Região: cidade</label>
+        <input id="cidade" placeholder="Ex.: Campinas" autocomplete="off">
+        <p class="erro" id="erro-cidade"></p>
+
+        <label for="estado">Região: estado</label>
+        <input id="estado" placeholder="Ex.: São Paulo" autocomplete="off">
+        <p class="erro" id="erro-estado"></p>
+
+        <label for="pais">Região: país</label>
+        <input id="pais" placeholder="Ex.: Brasil" autocomplete="off">
+        <p class="erro" id="erro-pais"></p>
+
+        <label for="data">Data de instalação</label>
+        <input id="data" type="date">
+        <p class="erro" id="erro-data"></p>
+
+        <label for="apelido">Apelido (opcional)</label>
+        <input id="apelido" placeholder="Ex.: Jardim" autocomplete="off">
+        <p class="erro" id="erro-apelido"></p>
+
+        <div class="acoes">
+          <button class="primario" id="salvar">Salvar colmeia</button>
+          <button type="button" class="link" onclick="mostrar('lista')">Cancelar</button>
+        </div>
+      </form>
+
+    </section>
+
+  </main>
+
+  <script src="js/auth.js"></script>
+
+  <script src="js/dados.js"></script>
+
+  <script src="js/colmeias.js"></script>
+
+</body>
+
+</html>

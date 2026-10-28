@@ -1,0 +1,265 @@
+/* Biosaka - Estilos da página inicial */
+
+
+/* ---------- Seção 1: apresentação ---------- */
+.hero {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 64px 48px 72px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 48px;
+}
+
+.selo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--verde);
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.selo-ponto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--verde);
+}
+
+.hero h1 {
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.hero-descricao {
+  color: var(--suave);
+  font-size: 18px;
+  max-width: 400px;
+  margin-bottom: 28px;
+}
+
+.hero-imagem {
+  background: var(--amarelo-claro);
+  border-radius: 28px;
+  min-height: 340px;
+  display: grid;
+  place-items: center;
+  color: var(--escuro);
+}
+
+
+/* ---------- Seção 2: benefícios ---------- */
+.beneficios {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 48px 80px;
+}
+
+.beneficios-etiqueta {
+  color: var(--escuro);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.beneficios h2 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 24px;
+}
+
+.beneficios-grade {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.beneficio {
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 16px;
+  padding: 22px;
+}
+
+.beneficio-icone {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--amarelo-icone);
+  color: var(--escuro);
+  display: grid;
+  place-items: center;
+  margin-bottom: 20px;
+}
+
+.beneficio h3 {
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.beneficio p {
+  color: var(--suave);
+  font-size: 13px;
+}
+
+
+/* ---------- Tablet: benefícios em 2 colunas ---------- */
+@media (max-width: 900px) {
+  .beneficios-grade {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
+/* ---------- Celular: tudo em 1 coluna ---------- */
+@media (max-width: 700px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 40px 20px;
+  }
+
+  .hero h1 {
+    font-size: 34px;
+  }
+
+  .hero-imagem {
+    min-height: 240px;
+  }
+
+  .beneficios {
+    padding: 0 20px 56px;
+  }
+
+  .beneficios-grade {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ---------- Carrossel de imagens do hero ---------- */
+.hero-imagem {
+  position: relative;
+  overflow: hidden;
+}
+
+.carrossel {
+  position: absolute;
+  inset: 0;
+}
+
+.carrossel-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity .6s ease;
+  pointer-events: none;
+}
+
+.carrossel-slide.ativo {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.carrossel-slide svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.carrossel-seta {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .9);
+  color: var(--escuro);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(80, 60, 20, .2);
+}
+
+.carrossel-seta:hover {
+  background: #fff;
+  color: var(--texto);
+}
+
+.carrossel-anterior { left: 12px; }
+.carrossel-proximo { right: 12px; }
+
+.carrossel-pontos {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.carrossel-ponto {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(42, 33, 18, .3);
+  cursor: pointer;
+}
+
+.carrossel-ponto.ativo {
+  background: var(--escuro);
+  width: 24px;
+  border-radius: 999px;
+}
+
+.carrossel-seta:focus-visible,
+.carrossel-ponto:focus-visible {
+  outline: 3px solid var(--verde);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carrossel-slide {
+    transition: none;
+  }
+}
+
+
+/* ---------- Fotos reais do carrossel ---------- */
+.carrossel-foto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.carrossel-credito {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  max-width: calc(100% - 24px);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(42, 33, 18, .55);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
