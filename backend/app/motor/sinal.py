@@ -34,7 +34,7 @@ O QUE ESTE ARQUIVO FAZ NA PRÁTICA:
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from app.motor.tipos import LeituraPura, FeaturesSinal
+from .tipos import LeituraPura, FeaturesSinal
 
 def limpar_leituras_invalidas(leituras: List[LeituraPura]) -> List[LeituraPura]:
     leituras_validas = []
@@ -112,10 +112,11 @@ def detectar_queda_abrupta(
 
 def extrair_features_sinal(
     leituras: List[LeituraPura],
-    peso_tara_kg: float,
+    peso_tara_kg: Optional[float],
     data_referencia: datetime
 ) -> FeaturesSinal:
     leituras_validas = limpar_leituras_invalidas(leituras)
+    tara_valida = peso_tara_kg is not None
 
     if not leituras_validas:
         return FeaturesSinal(
@@ -124,7 +125,8 @@ def extrair_features_sinal(
             delta_7d=0.0,
             queda_abrupta_detectada=False,
             reserva_liquida_alimento_kg=0.0,
-            dados_suficientes=False
+            dados_suficientes=False,
+            tara_definida=tara_valida
         )
 
     peso_noturno = extrair_peso_noturno(leituras_validas, data_referencia)
@@ -143,7 +145,8 @@ def extrair_features_sinal(
     delta_7d = round(peso_base - peso_7d, 2) if peso_7d is not None else 0.0
 
     queda_abrupta = detectar_queda_abrupta(leituras_validas)
-    reserva_liquida = round(max(0.0, peso_base - peso_tara_kg), 2)
+    tara_num = peso_tara_kg if tara_valida else 0.0
+    reserva_liquida = round(max(0.0, peso_base - tara_num), 2)
 
     return FeaturesSinal(
         peso_noturno_atual=peso_base,
@@ -151,5 +154,6 @@ def extrair_features_sinal(
         delta_7d=delta_7d,
         queda_abrupta_detectada=queda_abrupta,
         reserva_liquida_alimento_kg=reserva_liquida,
-        dados_suficientes=True
+        dados_suficientes=True,
+        tara_definida=tara_valida
     )

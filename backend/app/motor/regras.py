@@ -45,7 +45,7 @@ AS 4 REGRAS QUE FICAM AQUI:
 """
 from typing import List, Optional
 
-from app.motor.tipos import (
+from .tipos import (
     Semaforo,
     Confianca,
     CodigoRegra,
@@ -130,6 +130,16 @@ def avaliar_ponto_colheita(
             acao_sugerida="Aguarde novas leituras da balança."
         )
 
+    if not features.tara_definida:
+        return ResultadoRegra(
+            codigo=CodigoRegra.RF03,
+            semaforo=Semaforo.AMARELO,
+            disparou=False,
+            motivo="Tara da colmeia não cadastrada; impossível determinar volume de mel.",
+            confianca=Confianca.BAIXA,
+            acao_sugerida="Cadastre o peso da tara da colmeia para monitorar colheita."
+        )
+
     tara_aceitavel = 1.5
     limiar_minimo_melgueira = peso_meta_melgueira_kg - tara_aceitavel  # ex: 13.5 kg
 
@@ -174,6 +184,16 @@ def avaliar_risco_fome(features: FeaturesSinal) -> ResultadoRegra:
             motivo="Dados insuficientes da balança para avaliar reservas de alimento.",
             confianca=Confianca.BAIXA,
             acao_sugerida="Verifique a conexão da balança e aguarde novas leituras."
+        )
+
+    if not features.tara_definida:
+        return ResultadoRegra(
+            codigo=CodigoRegra.RF04,
+            semaforo=Semaforo.AMARELO,
+            disparou=False,
+            motivo="Tara da colmeia não cadastrada; impossível calcular reserva líquida de alimento.",
+            confianca=Confianca.BAIXA,
+            acao_sugerida="Cadastre o peso da tara da colmeia para monitorar risco de fome."
         )
 
     limiar_vermelho = 3.0

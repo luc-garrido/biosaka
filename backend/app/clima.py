@@ -28,3 +28,64 @@ O QUE ELE FAZ NA PRÁTICA:
      semáforo AMARELO por cautela até a conexão voltar.
 ==============================================================================
 """
+import time
+import httpx
+from .motor.tipos import ContextoClima
+
+# Dicionário de cache: (lat, lon) -> (tempo_em_que_expira, ContextoClima)
+_CACHE_CLIMA = {}
+TTL_CACHE_SEGUNDOS = 1800  # 1800 segundos = 30 minutos
+
+
+def obter_clima_indisponivel() -> ContextoClima:
+    """Devolve um objeto padrão indicando que os dados climáticos falharam."""
+    return ContextoClima(
+        temperatura_celsius=0.0,
+        chovendo=False,
+        vento_kmh=0.0,
+        dados_confiaveis=False,
+        umidade_pct=0.0,
+    )
+
+def consultar_clima(latitude: float, longitude: float) -> ContextoClima:
+    # Arredonda para 2 casas para agrupar o apiário inteiro na mesma chave
+    chave = (round(latitude, 2), round(longitude, 2))
+    agora = time.time()
+
+    # 1. VERIFICAÇÃO DE CACHE: Se já temos o clima e não expirou, devolve na hora!
+    if chave in _CACHE_CLIMA:
+        expira_em, contexto_salvo = _CACHE_CLIMA[chave]
+        if agora < expira_em:
+            return contexto_salvo
+
+    url = "https://api.open-meteo.com/v1/forecast"
+    parametros = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "current": "temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m",
+        "timezone": "auto",
+    }
+
+    try:
+        resposta = httpx.get(url, params=parametros, timeout=5.0)
+
+        if resposta.status_code == 200:
+            dados = resposta.json().get("current", {})
+            precipitacao = float(dados.get("precipitation", 0.0))
+
+            contexto = ContextoClima(
+                temperatura_celsius=float(dados.get("temperature_2m", 0.0)),
+                chovendo=(precipitacao > 0.1),
+                vento_kmh=float(dados.get("wind_speed_10m", 0.0)),
+                dados_confiaveis=True,
+                umidade_pct=float(dados.get("relative_humidity_2m", 0.0)),
+            )
+
+            # 2. SALVA NO CACHE: Guarda o resultado pelos próximos 30 minutos
+            _CACHE_CLIMA[chave] = (agora + TTL_CACHE_SEGUNDOS, contexto)
+            return contexto
+
+    except Exception:
+        pass
+
+    return obter_clima_indisponivel()

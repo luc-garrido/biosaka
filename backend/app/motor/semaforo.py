@@ -34,7 +34,7 @@ O QUE ELE FAZ NA PRÁTICA:
 ==============================================================================
 """
 from typing import List
-from app.motor.tipos import (
+from .tipos import (
     Semaforo,
     Confianca,
     CodigoRegra,

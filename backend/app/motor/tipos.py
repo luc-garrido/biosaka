@@ -69,6 +69,7 @@ class FeaturesSinal:
     queda_abrupta_detectada: bool
     reserva_liquida_alimento_kg: float
     dados_suficientes: bool = True
+    tara_definida: bool = True
 
 @dataclass(frozen=True)
 class ContextoClima:
