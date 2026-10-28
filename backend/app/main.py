@@ -25,3 +25,28 @@ O QUE ELE FAZ NA PRÁTICA:
    do banco de dados estão prontas; e quando desliga, fecha conexões pendentes.
 ==============================================================================
 """
+from rotas import roteador
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from app.banco import Base, engine
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    yield
+
+site = FastAPI(
+    title="Biosaka API",
+    description="Backend para monitoramento de colmeias",
+    version="1.0.0",
+    lifespan=lifespan, 
+)
+
+site.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
