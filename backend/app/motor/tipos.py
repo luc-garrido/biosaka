@@ -40,55 +40,57 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 class Semaforo(str, Enum):
-   VERDE = "VERDE"
-   AMARELO = "AMARELO"
-   VERMELHO = "VERMELHO"
+    VERDE = "VERDE"
+    AMARELO = "AMARELO"
+    VERMELHO = "VERMELHO"
 
 class Confianca(str, Enum):
-   ALTA = "ALTA"
-   MEDIA = "MEDIA"
-   BAIXA = "BAIXA"
+    ALTA = "ALTA"
+    MEDIA = "MEDIA"
+    BAIXA = "BAIXA"
 
 class CodigoRegra(str, Enum):
-   RF01 = "RF01" # Abertura Segura
-   RF03 = "RF03" # Ponto de Colheita
-   RF04 = "RF04" # Risco de Fome
-   RF05 = "RF05" # Risco de Enxameação
-   
+    RF01 = "RF01"  # Abertura Segura
+    RF03 = "RF03"  # Ponto de Colheita
+    RF04 = "RF04"  # Risco de Fome
+    RF05 = "RF05"  # Risco de Enxameação
+
 
 @dataclass(frozen=True)
 class LeituraPura:
-   data_hora: datetime
-   peso_kg: float
+    data_hora: datetime
+    peso_kg: float
 
 @dataclass(frozen=True)
 class FeaturesSinal:
-   peso_noturno_atual: float
-   delta_24h: float
-   delta_7d: float
-   queda_abrupta_detectada: bool
-   reserva_liquida_alimento_kg: float
+    peso_noturno_atual: float
+    delta_24h: float
+    delta_7d: float
+    queda_abrupta_detectada: bool
+    reserva_liquida_alimento_kg: float
+    dados_suficientes: bool = True
 
 @dataclass(frozen=True)
 class ContextoClima:
-   temperatura_celsius: float
-   chovendo: bool
-   vento_kmh: float
-   dados_confiaveis: bool
+    temperatura_celsius: float
+    chovendo: bool
+    vento_kmh: float
+    dados_confiaveis: bool
+    umidade_pct: float 
 
 @dataclass(frozen=True)
 class ResultadoRegra:
-   codigo: CodigoRegra
-   semaforo: Semaforo
-   disparou: bool
-   motivo: str
-   confianca: Confianca
-   acao_sugerida: Optional[str] = None
+    codigo: CodigoRegra
+    semaforo: Semaforo
+    disparou: bool
+    motivo: str
+    confianca: Confianca
+    acao_sugerida: Optional[str] = None
 
 @dataclass(frozen=True)
 class DiagnosticoFinal:
-   semaforo: Semaforo
-   frase_modo_avo: str
-   detalhes_regras: List[ResultadoRegra]
-   confianca: Confianca
+    semaforo: Semaforo
+    frase_modo_avo: str
+    detalhes_regras: List[ResultadoRegra]
+    confianca: Confianca
 
