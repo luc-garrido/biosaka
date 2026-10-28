@@ -1,1 +1,10 @@
-
+.env
+.venv/
+env/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.vscode/
+data/raw/
+*.zip

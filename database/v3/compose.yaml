@@ -1,0 +1,30 @@
+name: biosaka-v3
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3307:3306"
+    environment:
+      MYSQL_DATABASE: biosaka_v3_dev
+      MYSQL_USER: biosaka
+      MYSQL_PASSWORD: ${BIOSAKA_DB_PASSWORD:?Gere o arquivo .env primeiro}
+      MYSQL_ROOT_PASSWORD: ${BIOSAKA_DB_ROOT_PASSWORD:?Gere o arquivo .env primeiro}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+00:00
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./01_cadastros.sql:/docker-entrypoint-initdb.d/01_cadastros.sql:ro
+      - ./02_medicoes.sql:/docker-entrypoint-initdb.d/02_medicoes.sql:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'MYSQL_PWD="$$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u "$$MYSQL_USER" -D "$$MYSQL_DATABASE" -Nse "SELECT COUNT(*) FROM leituras" >/dev/null'
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 30s
+volumes:
+  mysql_data:

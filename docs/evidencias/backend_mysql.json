@@ -1,0 +1,46 @@
+{
+  "health": {
+    "status": "ok",
+    "database_checked": true,
+    "tabelas": [
+      "apiarios",
+      "colmeias",
+      "inspecoes",
+      "leituras",
+      "series_dataset",
+      "usuarios"
+    ]
+  },
+  "serie": {
+    "id": 3,
+    "colmeia_id": 9,
+    "codigo": "beehive-metrics-v3-wurzburg-weight-2017",
+    "metrica": "weight",
+    "fonte_url": "https://www.kaggle.com/datasets/se18m502/bee-hive-metrics",
+    "arquivo_origem": "weight_2017.csv",
+    "sha256_arquivo": "1c9182b5a17506cce790294ce1f0d5aa0e23e393ff0a0d68cec615c4778123a9",
+    "unidade_original": "kg",
+    "fuso_original": null
+  },
+  "total_leituras": 524110,
+  "amostras": [
+    {
+      "id": 5,
+      "serie_id": 3,
+      "instante_original": "2017-01-01T05:15:00",
+      "valor_original": "52.697400000000",
+      "texto_valor_original": "52.6974",
+      "linha_origem": 2
+    },
+    {
+      "id": 6,
+      "serie_id": 3,
+      "instante_original": "2017-01-01T05:16:00",
+      "valor_original": "52.697400000000",
+      "texto_valor_original": "52.6974",
+      "linha_origem": 3
+    }
+  ],
+  "horario_repetido_preservado": 2,
+  "resultado": "API HTTP consulta MySQL com dataset existente; nenhuma escrita realizada."
+}

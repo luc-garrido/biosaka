@@ -1,0 +1,388 @@
+{
+  "fonte": "https://www.kaggle.com/datasets/se18m502/bee-hive-metrics",
+  "sha256_zip": "63ded840937160c513f467ae00bdcdf9e0211d15b71a837616d086f88176a7a5",
+  "observacao": "Unidades e fuso horario nao inferidos dos valores.",
+  "arquivos": [
+    {
+      "arquivo": "flow_2017.csv",
+      "bytes": 23667451,
+      "linhas": 1048220,
+      "ausentes": 0,
+      "numeros_invalidos": 0,
+      "timestamps_repetidos": 524170,
+      "minimo": -419.0,
+      "maximo": 400.0,
+      "inicio": "2017-01-01 05:15:00",
+      "fim": "2017-12-31 05:14:00",
+      "amostras": [
+        {
+          "timestamp": "2017-01-01 05:15:00",
+          "flow": "0"
+        },
+        {
+          "timestamp": "2017-01-01 05:16:00",
+          "flow": "0"
+        },
+        {
+          "timestamp": "2017-01-01 05:17:00",
+          "flow": "0"
+        }
+      ],
+      "colunas": [
+        "timestamp",
+        "flow"
+      ]
+    },
+    {
+      "arquivo": "flow_schwartau.csv",
+      "bytes": 56867367,
+      "linhas": 2513836,
+      "ausentes": 0,
+      "numeros_invalidos": 0,
+      "timestamps_repetidos": 1257038,
+      "minimo": -631.0,
+      "maximo": 7999.0,
+      "inicio": "2017-01-01 14:15:00",
+      "fim": "2019-05-31 14:15:00",
+      "amostras": [
+        {
+          "timestamp": "2017-01-01 14:15:00",
+          "flow": "0"
+        },
+        {
+          "timestamp": "2017-01-01 14:16:00",
+          "flow": "0"
+        },
+        {
+          "timestamp": "2017-01-01 14:17:00",
+          "flow": "0"
+        }
+      ],
+      "colunas": [
+        "timestamp",
+        "flow"
+      ]
+    },
+    {
+      "arquivo": "flow_wurzburg.csv",
+      "bytes": 46437176,
+      "linhas": 2071720,
+      "ausentes": 0,
+      "numeros_invalidos": 0,
+      "timestamps_repetidos": 1035979,
+      "minimo": -674.0,
+      "maximo": 400.0,
+      "inicio": "2017-01-01 05:15:00",
+      "fim": "2019-05-20 13:48:00",
+      "amostras": [
+        {
+          "timestamp": "2017-01-01 05:15:00",
+          "flow": "0"
+        },
+        {
+          "timestamp": "2017-01-01 05:16:00",
+          "flow": "0"
+        },
+        {
+          "timestamp": "2017-01-01 05:17:00",
+          "flow": "0"
+        }
+      ],
+      "colunas": [
+        "timestamp",
+        "flow"
+      ]
+    },
+    {
+      "arquivo": "humidity_2017.csv",
+      "bytes": 323378,
+      "linhas": 8737,
+      "ausentes": 0,
+      "numeros_invalidos": 0,
+      "timestamps_repetidos": 1,
+      "minimo": -66.71,
+      "maximo": 99.65166666666669,
+      "inicio": "2017-01-01 05:00:00",
+      "fim": "2017-12-31 05:00:00",
+      "amostras": [
+        {
+          "timestamp": "2017-01-01 05:00:00",
+          "humidity": "92.40666666666674"
+        },
+        {
+          "timestamp": "2017-01-01 06:00:00",
+          "humidity": "92.26999999999998"
+        },
+        {
+          "timestamp": "2017-01-01 07:00:00",
+          "humidity": "92.575"
+        }
+      ],
+      "colunas": [
+        "timestamp",
+        "humidity"
+      ]
+    },
+    {
+      "arquivo": "humidity_schwartau.csv",
+      "bytes": 64272,
+      "linhas": 1761,
+      "ausentes": 12,
+      "numeros_invalidos": 0,
+      "timestamps_repetidos": 0,
+      "minimo": -100.0,
+      "maximo": 100.0,
+      "inicio": "2017-01-01 13:00:00",
+      "fim": "2019-05-31 14:00:00",
+      "amostras": [
+        {
+          "timestamp": "2017-01-01 13:00:00",
+          "humidity": "98.04031007751905"
+        },
+        {
+          "timestamp": "2017-01-02 01:00:00",
+          "humidity": "98.61055555555544"
+        },
+        {
+          "timestamp": "2017-01-02 13:00:00",
+          "humidity": "99.00208333333359"
+        }
+      ],
+      "colunas": [
+        "timestamp",
+        "humidity"
+      ]
+    },
+    {
+      "arquivo": "humidity_wurzburg.csv",
+      "bytes": 712911,
+      "linhas": 20845,
+      "ausentes": 3576,
+      "numeros_invalidos": 0,
+      "timestamps_repetidos": 2,
+      "minimo": -100.0,
+      "maximo": 99.65166666666669,
+      "inicio": "2017-01-01 05:00:00",
+      "fim": "2019-05-20 13:00:00",
+      "amostras": [
+        {
+          "timestamp": "2017-01-01 05:00:00",
+          "humidity": "92.40666666666674"
+        },
+        {
+          "timestamp": "2017-01-01 06:00:00",
+          "humidity": "92.26999999999998"
+        },
+        {
+          "timestamp": "2017-01-01 07:00:00",
+          "humidity": "92.575"
+        }
+      ],
+      "colunas": [
+        "timestamp",
+        "humidity"
+      ]
+    },
+    {
+      "arquivo": "temperature_2017.csv",
+      "bytes": 12912909,
+      "linhas": 401869,
+      "ausentes": 3,
+      "numeros_invalidos": 0,
+      "timestamps_repetidos": 297047,
+      "minimo": -227.14490909090924,
+      "maximo": 57.361999999999995,
+      "inicio": "2017-01-01 05:00:00",
+      "fim": "2017-12-31 05:10:00",
+      "amostras": [
+        {
+          "timestamp": "2017-01-01 05:00:00",
+          "temperature": "-1.9112444444444452"
+        },
+        {
+          "timestamp": "2017-01-01 06:00:00",
+          "temperature": "-1.8667166666666688"
+        },
+        {
+          "timestamp": "2017-01-01 07:00:00",
+          "temperature": "-2.0778333333333348"
+        }
+      ],
+      "colunas": [
+        "timestamp",
+        "temperature"
+      ]
+    },
+    {
+      "arquivo": "temperature_schwartau.csv",
+      "bytes": 7789141,
+      "linhas": 253430,
+      "ausentes": 2032,
+      "numeros_invalidos": 0,
+      "timestamps_repetidos": 24,
+      "minimo": -7.2614,
+      "maximo": 37.526,
+      "inicio": "2017-01-01 14:10:00",
+      "fim": "2019-05-31 14:15:00",
+      "amostras": [
+        {
+          "timestamp": "2017-01-01 14:10:00",
+          "temperature": ""
+        },
+        {
+          "timestamp": "2017-01-01 14:15:00",
+          "temperature": "12.34"
+        },
+        {
+          "timestamp": "2017-01-01 14:20:00",
+          "temperature": "12.27"
+        }
+      ],
+      "colunas": [
+        "timestamp",
+        "temperature"
+      ]
+    },
+    {
+      "arquivo": "temperature_wurzburg.csv",
+      "bytes": 28767738,
+      "linhas": 958831,
+      "ausentes": 164580,
+      "numeros_invalidos": 0,
+      "timestamps_repetidos": 708727,
+      "minimo": -227.14490909090924,
+      "maximo": 57.606,
+      "inicio": "2017-01-01 05:00:00",
+      "fim": "2019-05-20 13:45:00",
+      "amostras": [
+        {
+          "timestamp": "2017-01-01 05:00:00",
+          "temperature": "-1.9112444444444447"
+        },
+        {
+          "timestamp": "2017-01-01 06:00:00",
+          "temperature": "-1.8667166666666688"
+        },
+        {
+          "timestamp": "2017-01-01 07:00:00",
+          "temperature": "-2.0778333333333348"
+        }
+      ],
+      "colunas": [
+        "timestamp",
+        "temperature"
+      ]
+    },
+    {
+      "arquivo": "weight_2017.csv",
+      "bytes": 15257656,
+      "linhas": 524110,
+      "ausentes": 0,
+      "numeros_invalidos": 0,
+      "timestamps_repetidos": 60,
+      "minimo": -0.11521600000000001,
+      "maximo": 68.7024,
+      "inicio": "2017-01-01 05:15:00",
+      "fim": "2017-12-31 05:14:00",
+      "amostras": [
+        {
+          "timestamp": "2017-01-01 05:15:00",
+          "weight": "52.6974"
+        },
+        {
+          "timestamp": "2017-01-01 05:16:00",
+          "weight": "52.6974"
+        },
+        {
+          "timestamp": "2017-01-01 05:17:00",
+          "weight": "52.6974"
+        }
+      ],
+      "colunas": [
+        "timestamp",
+        "weight"
+      ]
+    },
+    {
+      "arquivo": "weight_schwartau.csv",
+      "bytes": 66966,
+      "linhas": 1761,
+      "ausentes": 12,
+      "numeros_invalidos": 0,
+      "timestamps_repetidos": 0,
+      "minimo": -172.44440027777765,
+      "maximo": 92042.23111111118,
+      "inicio": "2017-01-01 13:00:00",
+      "fim": "2019-05-31 14:00:00",
+      "amostras": [
+        {
+          "timestamp": "2017-01-01 13:00:00",
+          "weight": "50736.79007751918"
+        },
+        {
+          "timestamp": "2017-01-02 01:00:00",
+          "weight": "50700.684999999954"
+        },
+        {
+          "timestamp": "2017-01-02 13:00:00",
+          "weight": "50614.907500000125"
+        }
+      ],
+      "colunas": [
+        "timestamp",
+        "weight"
+      ]
+    },
+    {
+      "arquivo": "weight_wurzburg.csv",
+      "bytes": 29937970,
+      "linhas": 1035861,
+      "ausentes": 0,
+      "numeros_invalidos": 0,
+      "timestamps_repetidos": 120,
+      "minimo": -0.14806899999999998,
+      "maximo": 68.7024,
+      "inicio": "2017-01-01 05:15:00",
+      "fim": "2019-05-20 13:48:00",
+      "amostras": [
+        {
+          "timestamp": "2017-01-01 05:15:00",
+          "weight": "52.6974"
+        },
+        {
+          "timestamp": "2017-01-01 05:16:00",
+          "weight": "52.6974"
+        },
+        {
+          "timestamp": "2017-01-01 05:17:00",
+          "weight": "52.6974"
+        }
+      ],
+      "colunas": [
+        "timestamp",
+        "weight"
+      ]
+    }
+  ],
+  "repeticoes_weight_2017": {
+    "mesmo_valor": 7,
+    "valor_diferente": 53,
+    "amostras_conflitantes": [
+      {
+        "timestamp": "2017-10-29 02:00:00",
+        "primeiro": "56.25",
+        "repetido": "56.18600000000001"
+      },
+      {
+        "timestamp": "2017-10-29 02:01:00",
+        "primeiro": "56.153999999999996",
+        "repetido": "56.122"
+      },
+      {
+        "timestamp": "2017-10-29 02:02:00",
+        "primeiro": "56.18600000000001",
+        "repetido": "56.153999999999996"
+      }
+    ]
+  }
+}
