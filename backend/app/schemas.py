@@ -104,3 +104,13 @@ class PaginaLeituras(BaseModel):
     limite: int
     offset: int
     itens: list[LeituraOutput]
+
+class LoginInput(Entrada):
+    email: EmailStr
+    senha: SecretStr = Field(min_length=8, max_length=128)
+
+
+class TokenOutput(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int = 1800
