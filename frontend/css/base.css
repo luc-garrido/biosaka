@@ -1,0 +1,169 @@
+/* Biosaka - Estilos compartilhados */
+
+
+/* ---------- Cores do projeto ---------- */
+:root {
+  --ambar: #E8960C;
+  --escuro: #B87408;
+  --texto: #2A2112;
+  --suave: #6B6252;
+  --borda: #EFE4CE;
+  --verde: #2E7D4F;
+  --creme: #FFF8EC;
+  --amarelo-claro: #FEF1D0;
+  --amarelo-icone: #FDE8B5;
+}
+
+
+/* ---------- Configurações gerais ---------- */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", system-ui, sans-serif;
+  background: var(--creme);
+  color: var(--texto);
+  line-height: 1.4;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+
+/* ---------- Botões ---------- */
+.botao {
+  display: inline-block;
+  background: var(--ambar);
+  color: var(--texto);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  transition: background .2s;
+}
+
+.botao:hover {
+  background: var(--escuro);
+  color: #fff;
+}
+
+.botao-contorno {
+  border: 1.5px solid var(--ambar);
+  color: var(--escuro);
+  font-weight: 700;
+  padding: 8px 22px;
+  border-radius: 999px;
+  transition: background .2s;
+}
+
+.botao-contorno:hover {
+  background: var(--amarelo-claro);
+}
+
+
+/* ---------- Cabeçalho ---------- */
+.cabecalho {
+  background: #fff;
+  padding: 14px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.logo-icone {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--ambar);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+}
+
+.menu {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+
+/* ---------- Botão de voltar (todas as páginas, exceto a Home) ---------- */
+.voltar-barra {
+  padding: 16px max(48px, calc((100% - 1100px) / 2)) 0;
+}
+
+.voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--escuro);
+  padding: 8px 14px 8px 10px;
+  border-radius: 999px;
+  transition: background .2s;
+}
+
+.voltar:hover {
+  background: var(--amarelo-claro);
+}
+
+/* Seta grossa: o traço (stroke-width) é definido no próprio SVG */
+.voltar svg {
+  flex: none;
+}
+
+
+/* ---------- Celular: cabeçalho mais compacto ---------- */
+@media (max-width: 700px) {
+  .cabecalho {
+    padding: 12px 20px;
+  }
+
+  .menu {
+    gap: 12px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .botao-contorno {
+    padding: 7px 14px;
+  }
+
+  .voltar-barra {
+    padding: 12px 14px 0;
+  }
+}
+
+
+/* ---------- Celular pequeno: some o link "Sobre" para caber ---------- */
+@media (max-width: 400px) {
+  .menu a[href$="#sobre"] {
+    display: none;
+  }
+}

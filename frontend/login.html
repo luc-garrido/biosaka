@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biosaka - Entrar</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/base.css">
+
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+
+<body>
+
+  <!-- ========== CABEÇALHO ========== -->
+  <header class="cabecalho">
+
+    <a class="logo" href="index.html">
+      <span class="logo-icone">🐝</span>
+      Biosaka
+    </a>
+
+  </header>
+
+  <!-- ========== BOTÃO DE VOLTAR ========== -->
+  <div class="voltar-barra">
+    <a class="voltar" href="index.html" data-voltar>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H4" /><path d="M11 5l-7 7 7 7" /></svg>
+      Voltar
+    </a>
+  </div>
+
+
+  <main class="auth">
+
+    <!-- ========== FORMULÁRIO DE LOGIN ========== -->
+    <section class="auth-cartao">
+      <h1>Entrar na minha conta</h1>
+      <p class="auth-subtitulo">Use seu nome de usuário ou e-mail</p>
+
+      <p class="auth-aviso" id="aviso" hidden role="status">Conta criada com sucesso! Entre para continuar.</p>
+
+      <form id="form" novalidate>
+
+        <label for="identificador">Nome de usuário ou e-mail</label>
+        <input id="identificador" placeholder="Seu nome de usuário ou e-mail" autocomplete="username">
+        <p class="erro" id="erro-identificador"></p>
+
+        <label for="senha">Senha</label>
+        <input id="senha" type="password" placeholder="Sua senha" autocomplete="current-password">
+        <p class="erro" id="erro-senha"></p>
+
+        <p class="erro erro-geral" id="erro-geral"></p>
+
+        <button class="botao" type="submit">Entrar</button>
+      </form>
+
+      <p class="auth-rodape">Ainda não tem conta? <a href="cadastro.html">Criar conta</a></p>
+    </section>
+
+  </main>
+
+  <script src="js/voltar.js"></script>
+
+  <script src="js/auth.js"></script>
+
+  <script src="js/login.js"></script>
+
+</body>
+
+</html>

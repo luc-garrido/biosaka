@@ -1,0 +1,83 @@
+/* Biosaka - Estilos da página "Como a Biosaka funciona" */
+
+
+/* ---------- Conteúdo da página ---------- */
+.pagina {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 56px 48px 72px;
+}
+
+.pagina h1 {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 56px;
+}
+
+
+/* ---------- Cards explicativos ---------- */
+.passos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.passo {
+  background: #fff;
+  border-radius: 24px;
+  padding: 28px;
+  min-height: 190px;
+  box-shadow: 0 4px 20px rgba(80, 60, 20, .06);
+}
+
+.passo-icone {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--amarelo-icone);
+  color: var(--escuro);
+  display: grid;
+  place-items: center;
+  margin-bottom: 22px;
+}
+
+.passo h2 {
+  font-size: 19px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.passo p {
+  color: var(--suave);
+  font-size: 13px;
+  max-width: 420px;
+}
+
+
+/* ---------- Botão final centralizado ---------- */
+.chamada {
+  text-align: center;
+  margin-top: 32px;
+}
+
+
+/* ---------- Celular ---------- */
+@media (max-width: 700px) {
+  .pagina {
+    padding: 36px 20px 56px;
+  }
+
+  .pagina h1 {
+    font-size: 26px;
+    margin-bottom: 32px;
+  }
+
+  .passos {
+    grid-template-columns: 1fr;
+  }
+
+  .passo {
+    min-height: 0;
+  }
+}

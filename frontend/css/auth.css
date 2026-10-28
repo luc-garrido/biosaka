@@ -1,0 +1,141 @@
+/* Biosaka - Estilos das páginas de login e criação de conta */
+
+
+/* ---------- Cor extra usada nas mensagens de erro ---------- */
+:root {
+  --vermelho: #C0392B;
+}
+
+
+/* ---------- Posição do cartão na página ---------- */
+.auth {
+  display: flex;
+  justify-content: center;
+  padding: 56px 20px 72px;
+}
+
+.auth-cartao {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 36px 32px;
+  box-shadow: 0 6px 24px rgba(80, 60, 20, .08);
+}
+
+.auth-cartao h1 {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.auth-subtitulo {
+  text-align: center;
+  color: var(--suave);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+
+/* ---------- Aviso de conta criada ---------- */
+.auth-aviso {
+  background: #E6F4EA;
+  color: var(--verde);
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+}
+
+
+/* ---------- Campos do formulário ---------- */
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 16px 0 6px;
+}
+
+input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--texto);
+  padding: 13px 14px;
+  border: 2px solid var(--borda);
+  border-radius: 14px;
+  background: #fff;
+}
+
+input::placeholder {
+  color: var(--suave);
+}
+
+input:focus {
+  outline: 0;
+  border-color: var(--ambar);
+}
+
+[aria-invalid] {
+  border-color: var(--vermelho);
+}
+
+.erro {
+  color: var(--vermelho);
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.erro-geral {
+  text-align: center;
+  margin-top: 16px;
+}
+
+
+/* ---------- Botão de enviar ---------- */
+button.botao {
+  width: 100%;
+  margin-top: 24px;
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+
+/* ---------- Link entre login e cadastro ---------- */
+.auth-rodape {
+  text-align: center;
+  color: var(--suave);
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+.auth-rodape a {
+  color: var(--escuro);
+  font-weight: 700;
+}
+
+.auth-rodape a:hover {
+  text-decoration: underline;
+}
+
+
+/* ---------- Elementos escondidos ---------- */
+[hidden] {
+  display: none !important;
+}
+
+
+/* ---------- Celular ---------- */
+@media (max-width: 700px) {
+  .auth {
+    padding: 32px 16px 48px;
+  }
+
+  .auth-cartao {
+    padding: 28px 20px;
+  }
+}
