@@ -122,7 +122,7 @@ CREATE TABLE IF NOT EXISTS leituras_peso (
    são diferentes, e as análises devem usar "data_leitura". */
 --------------------------------------------------------------------------------------------------------
 
--- 8 PESO DIÁRIO (resumo calculado pro sys n ter q calcular td)
+-- 8 PESO DIÁRIO (resumo calculado pro sys n ter q calcular td)   (TROCAR POR PROCEDURE)
 CREATE TABLE IF NOT EXISTS peso_diario (
     colmeia_id INT NOT NULL,
     data_referencia DATE NOT NULL,
