@@ -2,9 +2,7 @@
 const $ = id => document.getElementById(id);
 const esc = t => Object.assign(document.createElement("div"), {textContent: t}).innerHTML;
 const hoje = () => new Date().toLocaleDateString("sv");
-const API_URL = "http://127.0.0.1:8000";
-// shortcut: chave administrativa apenas em memória; substituir por JWT antes do acesso multiusuário.
-let chave = "";
+const API_URL = "/api";
 let apiarios = [];
 let colmeias = [];
 const campos = ["apiario", "codigo", "especie", "data"];
@@ -16,7 +14,7 @@ const STATUS = {
 
 if (!lerSessao()) location.replace("login.html");
 $("nome-usuario").textContent = lerSessao() || "";
-$("sair").onclick = () => { chave = ""; encerrarSessao(); };
+$("sair").onclick = encerrarSessao;
 $("data").max = hoje();
 
 async function requisitar(caminho, metodo = "GET", dados) {
@@ -24,7 +22,7 @@ async function requisitar(caminho, metodo = "GET", dados) {
   try {
     resposta = await fetch(API_URL + caminho, {
       method: metodo,
-      headers: {"X-API-Key": chave, ...(dados ? {"Content-Type": "application/json"} : {})},
+      headers: dados ? {"Content-Type": "application/json"} : {},
       ...(dados ? {body: JSON.stringify(dados)} : {}),
       signal: AbortSignal.timeout(15000)
     });
@@ -33,7 +31,7 @@ async function requisitar(caminho, metodo = "GET", dados) {
   }
   const corpo = await resposta.json();
   if (!resposta.ok) {
-    const mensagem = resposta.status === 401 ? "Chave de acesso inválida. Conecte novamente."
+    const mensagem = resposta.status === 401 ? "Acesso da API não configurado. Confira o servidor local."
       : resposta.status === 409 ? "Registro duplicado ou com dependências. Confira o código e o apiário."
       : Array.isArray(corpo.detail) ? corpo.detail.map(e => e.msg).join("; ")
       : corpo.detail || "Não foi possível concluir a operação.";
@@ -79,6 +77,7 @@ function renderizar() {
 }
 
 async function carregar() {
+  $("atualizar").disabled = true;
   $("nova-colmeia").disabled = true;
   $("lista").setAttribute("aria-busy", "true");
   $("lista").innerHTML = '<div class="card">Carregando colmeias...</div>';
@@ -97,23 +96,14 @@ async function carregar() {
   } catch (erro) {
     apiarios = [];
     colmeias = [];
-    $("lista").innerHTML = '<div class="vazio">Falha ao carregar. Informe a chave e tente conectar novamente.</div>';
+    $("lista").innerHTML = '<div class="vazio">Falha ao carregar. Confira os servidores e clique em Atualizar.</div>';
     toast(erro.message, false);
     return false;
   } finally {
+    $("atualizar").disabled = false;
     $("lista").setAttribute("aria-busy", "false");
   }
 }
-
-$("conexao").onsubmit = async e => {
-  e.preventDefault();
-  chave = $("chave-api").value.trim();
-  $("chave-api").value = "";
-  if (!chave) return toast("Informe a chave de acesso da API.", false);
-  $("conectar").disabled = true;
-  try { await carregar(); }
-  finally { $("conectar").disabled = false; }
-};
 
 function marcar(campo, mensagem) {
   $("erro-" + campo).textContent = mensagem;
@@ -176,3 +166,5 @@ $("lista").onclick = async e => {
     botao.disabled = false;
   }
 };
+
+carregar();

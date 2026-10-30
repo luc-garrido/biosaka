@@ -35,14 +35,8 @@
       <h1>Olá, <span id="nome-usuario">Eduardo</span></h1>
       <p class="suave">Colmeias cadastradas no banco:</p>
 
-      <form id="conexao" class="form">
-        <p>Demonstração local: acesso administrativo compartilhado. O login individual ainda não está integrado.</p>
-        <label for="chave-api">Chave de acesso da API</label>
-        <input id="chave-api" type="password" autocomplete="off" required>
-        <button class="primario" id="conectar">Conectar ao banco</button>
-      </form>
-
       <div class="barra">
+        <button class="secundario" id="atualizar" onclick="carregar()">Atualizar</button>
         <button class="primario" id="nova-colmeia" onclick="abrirForm()" disabled>+ Nova colmeia</button>
       </div>
 

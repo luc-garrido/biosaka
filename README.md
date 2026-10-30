@@ -130,19 +130,26 @@ nem envio de WhatsApp nesta implementacao.
 Com MySQL e API iniciados conforme acima, abra outro terminal na raiz:
 
 ```powershell
-.venv/Scripts/python.exe -m http.server 5173 --bind 127.0.0.1 --directory frontend
+.venv/Scripts/python.exe frontend/servidor.py
 ```
 
 1. Abra http://127.0.0.1:5173/login.html e entre pela conta de demonstracao local.
-2. Na tela de colmeias, informe BIOSAKA_API_TOKEN no campo de chave e clique em
-   Conectar ao banco. A chave fica somente em memoria e deve ser informada novamente
-   ao recarregar; nao e salva junto das contas locais.
-3. Selecione um apiario existente, cadastre uma colmeia e recarregue/reconecte para
+2. A tela de colmeias carrega automaticamente. O servidor local encaminha as chamadas
+   /api para a FastAPI, lendo a chave do .env. A chave nao vai para o JavaScript,
+   para o armazenamento nem para as requisicoes do navegador.
+3. Selecione um apiario existente, cadastre uma colmeia e recarregue para
    conferir a persistencia. Sem apiarios, crie primeiro usuario e apiario pelo Swagger.
 4. Use Desativar/Reativar e confira a situacao apos recarregar. A alteracao preserva
    os campos de tara e rainha, sem excluir historico.
 
-No painel de rede devem aparecer GET /apiarios, GET /colmeias, POST /colmeias e
-GET/PUT /colmeias/{id}. A listagem mostra ate 1000 registros e a situacao cadastral;
+No painel de rede devem aparecer GET /api/apiarios, GET /api/colmeias, POST /api/colmeias e
+GET/PUT /api/colmeias/{id}. A listagem mostra ate 1000 registros e a situacao cadastral;
 nao mostra diagnostico preditivo. Esta demonstracao administrativa acessa todos os
 registros da API: a sessao local nao restringe os dados por apicultor.
+
+O servidor da interface escuta somente em 127.0.0.1:5173, rejeita Host e origem
+externos e encaminha apenas consulta de apiarios e consulta/cadastro/alteracao de
+colmeias. As rotas originais da FastAPI continuam exigindo X-API-Key, inclusive no
+Swagger. Este servidor e um console local, nao uma solucao de autenticacao para
+publicacao na Internet. Login individual e autorizacao por proprietario continuam
+pendentes. Use frontend/servidor.py; o servidor estatico http.server nao encaminha /api.
