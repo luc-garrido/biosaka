@@ -1,106 +1,119 @@
-// Biosaka - Lógica da tela de colmeias
-
-
-// ---------- Funções auxiliares ----------
-
-// Atalho para document.getElementById
+// Biosaka - Colmeias consultadas e cadastradas pela API local.
 const $ = id => document.getElementById(id);
-
-// Escapa o texto digitado antes de inseri-lo no HTML
 const esc = t => Object.assign(document.createElement("div"), {textContent: t}).innerHTML;
-
-// Data de hoje no formato AAAA-MM-DD
 const hoje = () => new Date().toLocaleDateString("sv");
-
-
-// ---------- Sessão ----------
-
-// Sem login, volta para a tela de login
-if (!lerSessao()) {
-  location.replace("login.html");
-}
-
-$("nome-usuario").textContent = lerSessao() || "";
-
-$("sair").onclick = encerrarSessao;
-
-
-// ---------- Dados ----------
-
-const campos = ["codigo", "especie", "cidade", "estado", "pais", "data", "apelido"];
-
-// Classe CSS e texto de cada status da colmeia
+const API_URL = "http://127.0.0.1:8000";
+// shortcut: chave administrativa apenas em memória; substituir por JWT antes do acesso multiusuário.
+let chave = "";
+let apiarios = [];
+let colmeias = [];
+const campos = ["apiario", "codigo", "especie", "data"];
 const STATUS = {
-  pronta: ["pronta", "✔ Pronta para a coleta"],
-  aguardar: ["aguardar", "✖ Melhor aguardar"],
-  "sem-dados": ["sem-dados", "… Aguardando dados do sensor"]
+  ativa: ["pronta", "Ativa"],
+  em_observacao: ["sem-dados", "Em observação"],
+  inativa: ["aguardar", "Inativa"]
 };
 
-// Colmeias salvas, ou as de exemplo na primeira vez
-const colmeias = lerColmeias();
+if (!lerSessao()) location.replace("login.html");
+$("nome-usuario").textContent = lerSessao() || "";
+$("sair").onclick = () => { chave = ""; encerrarSessao(); };
+$("data").max = hoje();
 
-
-// ---------- Navegação entre telas ----------
+async function requisitar(caminho, metodo = "GET", dados) {
+  let resposta;
+  try {
+    resposta = await fetch(API_URL + caminho, {
+      method: metodo,
+      headers: {"X-API-Key": chave, ...(dados ? {"Content-Type": "application/json"} : {})},
+      ...(dados ? {body: JSON.stringify(dados)} : {}),
+      signal: AbortSignal.timeout(15000)
+    });
+  } catch (erro) {
+    throw new Error("Não foi possível acessar a API. Confira o servidor e tente novamente.");
+  }
+  const corpo = await resposta.json();
+  if (!resposta.ok) {
+    const mensagem = resposta.status === 401 ? "Chave de acesso inválida. Conecte novamente."
+      : resposta.status === 409 ? "Registro duplicado ou com dependências. Confira o código e o apiário."
+      : Array.isArray(corpo.detail) ? corpo.detail.map(e => e.msg).join("; ")
+      : corpo.detail || "Não foi possível concluir a operação.";
+    throw new Error(mensagem);
+  }
+  return corpo;
+}
 
 function mostrar(tela) {
   $("tela-lista").hidden = tela !== "lista";
   $("tela-form").hidden = tela !== "form";
-
   scrollTo(0, 0);
 }
 
 function abrirForm() {
+  if (!apiarios.length) return toast("Cadastre um apiário pela API antes de cadastrar colmeias.", false);
   $("form").reset();
   campos.forEach(c => marcar(c, ""));
-
   mostrar("form");
-  $("codigo").focus();
+  $("apiario").focus();
 }
-
-
-// ---------- Mensagem de sucesso ou erro ----------
 
 function toast(texto, ok) {
   const t = $("toast");
-
   t.textContent = (ok ? "✔ " : "⚠ ") + texto;
   t.style.background = ok ? "var(--verde)" : "var(--vermelho)";
   t.hidden = false;
-
-  setTimeout(() => t.hidden = true, 4000);
+  setTimeout(() => t.hidden = true, 6000);
 }
-
-
-// ---------- Listagem de colmeias ----------
 
 function renderizar() {
   $("lista").innerHTML = colmeias.length ? colmeias.map(c => {
-    const [classe, texto] = STATUS[c.status];
-
-    const apelido = c.apelido ? ` <small>· ${esc(c.apelido)}</small>` : "";
-
-    // A data aparece como DD/MM/AAAA
-    return `<div class="card"><h2>${esc(c.codigo)}${apelido}</h2>
-      <p>${esc(c.especie)} · instalada em ${c.data.split("-").reverse().join("/")}<br>
-      ${esc(textoRegiao(c))}</p>
-      <div class="status ${classe}">${texto}</div>
-      <p class="proximo">Próximo passo: <strong>${PROXIMO_PASSO[c.status].acao}</strong><br>
-      Data sugerida: ${dataSugerida(c.status)}</p>
-      <a class="botao-link secundario" href="detalhes.html?codigo=${encodeURIComponent(c.codigo)}">Ver detalhes</a></div>`;
-  }).join("") : `<div class="vazio"><div style="font-size:56px">🐝</div>
-    <h2>Você ainda não tem colmeias</h2>
-    <button class="primario" onclick="abrirForm()">Cadastrar primeira colmeia</button></div>`;
+    const [classe, texto] = STATUS[c.situacao];
+    const apiario = apiarios.find(a => a.id === c.apiario_id);
+    const data = c.data_instalacao ? c.data_instalacao.split("-").reverse().join("/") : "não informada";
+    return `<div class="card"><h2>${esc(c.codigo)}</h2>
+      <p>${esc(c.especie_abelha || "Espécie não informada")} · instalação: ${esc(data)}<br>
+      ${esc(apiario ? apiario.nome : "Apiário " + c.apiario_id)}</p>
+      <div class="status ${classe}">Situação cadastral: ${texto}</div>
+      <p>Diagnóstico de sensores ainda não integrado.</p>
+      <button class="secundario" data-id="${c.id}">${c.situacao === "inativa" ? "Reativar" : "Desativar"}</button></div>`;
+  }).join("") : `<div class="vazio"><h2>Nenhuma colmeia cadastrada no banco</h2></div>`;
 }
 
-function carregar() {
-  $("lista").innerHTML = '<div class="card"><div class="sk"></div><div class="sk" style="width:45%"></div><div class="sk" style="height:46px"></div></div>'.repeat(4);
-
-  // Simula o tempo de resposta de um servidor
-  setTimeout(renderizar, 1200);
+async function carregar() {
+  $("nova-colmeia").disabled = true;
+  $("lista").setAttribute("aria-busy", "true");
+  $("lista").innerHTML = '<div class="card">Carregando colmeias...</div>';
+  try {
+    // shortcut: até 1000 registros por listagem; paginar quando o cadastro ultrapassar esse limite.
+    const resultado = await Promise.all([
+      requisitar("/apiarios?limite=1000"), requisitar("/colmeias?limite=1000")
+    ]);
+    [apiarios, colmeias] = resultado;
+    $("apiario").innerHTML = '<option value="">Selecione o apiário</option>' + apiarios.map(a =>
+      `<option value="${a.id}">${esc(a.nome)}</option>`).join("");
+    renderizar();
+    $("nova-colmeia").disabled = !apiarios.length;
+    if (!apiarios.length) toast("Cadastre um apiário pela API antes de cadastrar colmeias.", false);
+    return true;
+  } catch (erro) {
+    apiarios = [];
+    colmeias = [];
+    $("lista").innerHTML = '<div class="vazio">Falha ao carregar. Informe a chave e tente conectar novamente.</div>';
+    toast(erro.message, false);
+    return false;
+  } finally {
+    $("lista").setAttribute("aria-busy", "false");
+  }
 }
 
-
-// ---------- Validação do formulário ----------
+$("conexao").onsubmit = async e => {
+  e.preventDefault();
+  chave = $("chave-api").value.trim();
+  $("chave-api").value = "";
+  if (!chave) return toast("Informe a chave de acesso da API.", false);
+  $("conectar").disabled = true;
+  try { await carregar(); }
+  finally { $("conectar").disabled = false; }
+};
 
 function marcar(campo, mensagem) {
   $("erro-" + campo).textContent = mensagem;
@@ -108,92 +121,58 @@ function marcar(campo, mensagem) {
 }
 
 function validar() {
-  // Sem autocorreção: os valores são lidos exatamente como foram digitados.
-  // Se algo estiver errado, aparece uma mensagem de erro (nada é cortado nem trocado).
-  const codigo = $("codigo").value, data = $("data").value, apelido = $("apelido").value;
-
+  const codigo = $("codigo").value, data = $("data").value;
   const erros = {
-    codigo: !codigo
-      ? "Informe o código da colmeia."
-      : !/^COL-\d{3}$/.test(codigo)
-        ? "Use o formato COL-000, com letras maiúsculas e sem espaços (ex.: COL-004)."
-        : "",
+    apiario: apiarios.some(a => a.id === Number($("apiario").value)) ? "" : "Selecione um apiário.",
+    codigo: /^COL-\d{3}$/.test(codigo) ? "" : "Use o formato COL-000 (ex.: COL-004).",
     especie: $("especie").value ? "" : "Selecione a espécie.",
-    cidade: erroDeLugar($("cidade").value, "a cidade"),
-    estado: erroDeLugar($("estado").value, "o estado"),
-    pais: erroDeLugar($("pais").value, "o país"),
-    data: !data
-      ? "Informe uma data de instalação válida."
-      : data < "1900-01-01"
-        ? "Informe uma data a partir de 1900."
-        : data > hoje()
-          ? "A data não pode ser no futuro."
-          : "",
-    // Apelido é opcional, mas se for preenchido precisa ser válido
-    apelido: !apelido
-      ? ""
-      : apelido !== apelido.trim() || /\s{2,}/.test(apelido)
-        ? "Remova os espaços extras (no início, no fim ou repetidos)."
-        : apelido.length > 30
-          ? "Use no máximo 30 caracteres."
-          : ""
+    data: !data || data < "1900-01-01" || data > hoje() ? "Informe uma data entre 1900 e hoje." : ""
   };
-
   campos.forEach(c => marcar(c, erros[c]));
-
   const primeiro = campos.find(c => erros[c]);
   if (primeiro) $(primeiro).focus();
-
   return !primeiro;
 }
 
-
-// ---------- Envio do formulário ----------
-
-$("form").onsubmit = e => {
+$("form").onsubmit = async e => {
   e.preventDefault();
-
-  if (!validar()) return;
-
-  const nova = {
-    codigo: $("codigo").value,
-    apelido: $("apelido").value,
-    especie: $("especie").value,
-    regiao: {
-      cidade: $("cidade").value,
-      estado: $("estado").value,
-      pais: $("pais").value
-    },
-    data: $("data").value,
-    status: "sem-dados",
-    sensor: null,
-    historico: [{ data: $("data").value, texto: "Colmeia instalada" }]
-  };
-
   const botao = $("salvar");
+  if (botao.disabled || !validar()) return;
+  const nova = {
+    apiario_id: Number($("apiario").value), codigo: $("codigo").value,
+    especie_abelha: $("especie").value, data_instalacao: $("data").value, situacao: "ativa"
+  };
   botao.disabled = true;
-  botao.innerHTML = '<span class="spinner"></span> Salvando...';
-
-  // Simula o tempo de resposta de um servidor
-  setTimeout(() => {
+  botao.textContent = "Salvando...";
+  try {
+    const salva = await requisitar("/colmeias", "POST", nova);
+    colmeias.push(salva);
+    renderizar();
+    mostrar("lista");
+    toast("Colmeia cadastrada no banco com sucesso!", true);
+  } catch (erro) {
+    toast(erro.message, false);
+  } finally {
     botao.disabled = false;
     botao.textContent = "Salvar colmeia";
-
-    if (colmeias.some(c => c.codigo === nova.codigo)) {
-      marcar("codigo", "Já existe uma colmeia com esse código.");
-      return toast("Não foi possível salvar. Tente novamente.", false);
-    }
-
-    // ONDE SALVAR NO DATASET: a nova colmeia é gravada em salvarColmeias() (ver dados.js)
-    colmeias.push(nova);
-    salvarColmeias(colmeias);
-    toast("Colmeia cadastrada com sucesso!", true);
-    mostrar("lista");
-    carregar();
-  }, 1000);
+  }
 };
 
-
-// ---------- Início ----------
-
-carregar();
+$("lista").onclick = async e => {
+  const botao = e.target.closest("button[data-id]");
+  if (!botao || botao.disabled) return;
+  botao.disabled = true;
+  try {
+    // PUT substitui o registro: buscar antes evita apagar tara e dados da rainha ausentes no formulário.
+    const {id, ...dados} = await requisitar("/colmeias/" + botao.dataset.id);
+    dados.situacao = dados.situacao === "inativa" ? "ativa" : "inativa";
+    const salva = await requisitar("/colmeias/" + id, "PUT", dados);
+    colmeias = colmeias.map(c => c.id === salva.id ? salva : c);
+    renderizar();
+    toast("Situação atualizada no banco!", true);
+  } catch (erro) {
+    toast(erro.message, false);
+  } finally {
+    botao.disabled = false;
+  }
+};

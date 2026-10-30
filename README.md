@@ -102,6 +102,12 @@ so o estado de outro ambiente. Consultas em database/v3/ver_peso_no_workbench.sq
 
 ## Testes
 
+Teste da tela de colmeias, sem dependências adicionais (Node.js 18+):
+
+```powershell
+node --test frontend/tests/colmeias.test.cjs
+```
+
 ```powershell
 .venv/Scripts/python.exe -m pip install -r requirements-dev.txt
 .venv/Scripts/python.exe -m pytest backend/tests -q
@@ -114,6 +120,29 @@ ao final; o banco biosaka_v3_dev e o dataset nao sao alterados.
 ## Limites atuais
 
 API administrativa para uso local. A chave compartilhada nao substitui login
-individual/JWT nem autorizacao por proprietario. O frontend ainda precisa
-ser integrado. Nao ha diagnostico, previsao agronomica, hardware, clima
+individual/JWT nem autorizacao por proprietario. A tela de colmeias consulta,
+cadastra e altera a situacao pela API; as demais telas ainda usam demonstracao local.
+Nao ha diagnostico integrado, previsao agronomica, hardware, clima
 nem envio de WhatsApp nesta implementacao.
+
+## Demonstrar a integracao de colmeias
+
+Com MySQL e API iniciados conforme acima, abra outro terminal na raiz:
+
+```powershell
+.venv/Scripts/python.exe -m http.server 5173 --bind 127.0.0.1 --directory frontend
+```
+
+1. Abra http://127.0.0.1:5173/login.html e entre pela conta de demonstracao local.
+2. Na tela de colmeias, informe BIOSAKA_API_TOKEN no campo de chave e clique em
+   Conectar ao banco. A chave fica somente em memoria e deve ser informada novamente
+   ao recarregar; nao e salva junto das contas locais.
+3. Selecione um apiario existente, cadastre uma colmeia e recarregue/reconecte para
+   conferir a persistencia. Sem apiarios, crie primeiro usuario e apiario pelo Swagger.
+4. Use Desativar/Reativar e confira a situacao apos recarregar. A alteracao preserva
+   os campos de tara e rainha, sem excluir historico.
+
+No painel de rede devem aparecer GET /apiarios, GET /colmeias, POST /colmeias e
+GET/PUT /colmeias/{id}. A listagem mostra ate 1000 registros e a situacao cadastral;
+nao mostra diagnostico preditivo. Esta demonstracao administrativa acessa todos os
+registros da API: a sessao local nao restringe os dados por apicultor.

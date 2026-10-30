@@ -33,14 +33,20 @@
       </a>
 
       <h1>Olá, <span id="nome-usuario">Eduardo</span></h1>
-      <p class="suave">Suas colmeias ativas:</p>
+      <p class="suave">Colmeias cadastradas no banco:</p>
+
+      <form id="conexao" class="form">
+        <p>Demonstração local: acesso administrativo compartilhado. O login individual ainda não está integrado.</p>
+        <label for="chave-api">Chave de acesso da API</label>
+        <input id="chave-api" type="password" autocomplete="off" required>
+        <button class="primario" id="conectar">Conectar ao banco</button>
+      </form>
 
       <div class="barra">
-        <a class="botao-link secundario" href="detalhes.html">Mais detalhes</a>
-        <button class="primario" onclick="abrirForm()">+ Nova colmeia</button>
+        <button class="primario" id="nova-colmeia" onclick="abrirForm()" disabled>+ Nova colmeia</button>
       </div>
 
-      <div id="lista" class="grade"></div>
+      <div id="lista" class="grade" aria-live="polite"></div>
     </section>
 
     <!-- ========== TELA 2: CADASTRO DE NOVA COLMEIA ========== -->
@@ -53,6 +59,10 @@
 
       <form class="form" id="form" novalidate>
         <h1>Cadastrar nova colmeia</h1>
+
+        <label for="apiario">Apiário</label>
+        <select id="apiario" aria-describedby="erro-apiario"></select>
+        <p class="erro" id="erro-apiario"></p>
 
         <label for="codigo">Código da colmeia</label>
         <input id="codigo" placeholder="Ex.: COL-004" autocomplete="off">
@@ -67,25 +77,9 @@
         </select>
         <p class="erro" id="erro-especie"></p>
 
-        <label for="cidade">Região: cidade</label>
-        <input id="cidade" placeholder="Ex.: Campinas" autocomplete="off">
-        <p class="erro" id="erro-cidade"></p>
-
-        <label for="estado">Região: estado</label>
-        <input id="estado" placeholder="Ex.: São Paulo" autocomplete="off">
-        <p class="erro" id="erro-estado"></p>
-
-        <label for="pais">Região: país</label>
-        <input id="pais" placeholder="Ex.: Brasil" autocomplete="off">
-        <p class="erro" id="erro-pais"></p>
-
         <label for="data">Data de instalação</label>
         <input id="data" type="date">
         <p class="erro" id="erro-data"></p>
-
-        <label for="apelido">Apelido (opcional)</label>
-        <input id="apelido" placeholder="Ex.: Jardim" autocomplete="off">
-        <p class="erro" id="erro-apelido"></p>
 
         <div class="acoes">
           <button class="primario" id="salvar">Salvar colmeia</button>
@@ -98,8 +92,6 @@
   </main>
 
   <script src="js/auth.js"></script>
-
-  <script src="js/dados.js"></script>
 
   <script src="js/colmeias.js"></script>
 
