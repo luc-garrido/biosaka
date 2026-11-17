@@ -1,57 +1,42 @@
-// Biosaka - Colmeias consultadas e cadastradas pela API local.
+// Biosaka - Apiários e colmeias do usuário logado, consultados e cadastrados pela API.
+// Precisa de auth.js e api.js carregados antes.
 const $ = id => document.getElementById(id);
 const esc = t => Object.assign(document.createElement("div"), {textContent: t}).innerHTML;
 const hoje = () => new Date().toLocaleDateString("sv");
-const API_URL = "/api";
 let apiarios = [];
 let colmeias = [];
 const campos = ["apiario", "codigo", "especie", "data"];
+const camposApiario = ["apiario-nome", "apiario-local"];
 const STATUS = {
   ativa: ["pronta", "Ativa"],
   em_observacao: ["sem-dados", "Em observação"],
   inativa: ["aguardar", "Inativa"]
 };
 
-if (!lerSessao()) location.replace("login.html");
-$("nome-usuario").textContent = lerSessao() || "";
-$("sair").onclick = encerrarSessao;
+exigirLogin();
+const usuario = usuarioLogado() || {};
+$("nome-usuario").textContent = usuario.nome || "";
+$("sair").onclick = e => { e.preventDefault(); sair(); };
 $("data").max = hoje();
 
-async function requisitar(caminho, metodo = "GET", dados) {
-  let resposta;
-  try {
-    resposta = await fetch(API_URL + caminho, {
-      method: metodo,
-      headers: dados ? {"Content-Type": "application/json"} : {},
-      ...(dados ? {body: JSON.stringify(dados)} : {}),
-      signal: AbortSignal.timeout(15000)
-    });
-  } catch (erro) {
-    throw new Error("Não foi possível acessar a API. Confira o servidor e tente novamente.");
-  }
-  const corpo = await resposta.json();
-  if (!resposta.ok) {
-    const mensagem = resposta.status === 401 ? "Acesso da API não configurado. Confira o servidor local."
-      : resposta.status === 409 ? "Registro duplicado ou com dependências. Confira o código e o apiário."
-      : Array.isArray(corpo.detail) ? corpo.detail.map(e => e.msg).join("; ")
-      : corpo.detail || "Não foi possível concluir a operação.";
-    throw new Error(mensagem);
-  }
-  return corpo;
-}
-
 function mostrar(tela) {
-  $("tela-lista").hidden = tela !== "lista";
-  $("tela-form").hidden = tela !== "form";
+  for (const nome of ["lista", "form", "apiario"]) $("tela-" + nome).hidden = tela !== nome;
   scrollTo(0, 0);
 }
 
 function abrirForm() {
-  if (!apiarios.length) return toast("Cadastre um apiário pela API antes de cadastrar colmeias.", false);
+  if (!apiarios.length) return toast("Cadastre um apiário antes de cadastrar colmeias.", false);
   $("form").reset();
   campos.forEach(c => marcar(c, ""));
   mostrar("form");
   $("apiario").focus();
+}
+
+function abrirApiario() {
+  $("form-apiario").reset();
+  camposApiario.forEach(c => marcar(c, ""));
+  mostrar("apiario");
+  $("apiario-nome").focus();
 }
 
 function toast(texto, ok) {
@@ -71,9 +56,16 @@ function renderizar() {
       <p>${esc(c.especie_abelha || "Espécie não informada")} · instalação: ${esc(data)}<br>
       ${esc(apiario ? apiario.nome : "Apiário " + c.apiario_id)}</p>
       <div class="status ${classe}">Situação cadastral: ${texto}</div>
-      <p>Diagnóstico de sensores ainda não integrado.</p>
+      <a class="botao-link primario" href="detalhes.html?id=${c.id}">Ver detalhes</a>
       <button class="secundario" data-id="${c.id}">${c.situacao === "inativa" ? "Reativar" : "Desativar"}</button></div>`;
-  }).join("") : `<div class="vazio"><h2>Nenhuma colmeia cadastrada no banco</h2></div>`;
+  }).join("") : `<div class="vazio"><h2>Nenhuma colmeia cadastrada</h2>
+      <p>${apiarios.length ? "Clique em “+ Nova colmeia” para começar." : "Comece cadastrando seu primeiro apiário."}</p></div>`;
+}
+
+function preencherApiarios() {
+  $("apiario").innerHTML = '<option value="">Selecione o apiário</option>' + apiarios.map(a =>
+    `<option value="${a.id}">${esc(a.nome)}</option>`).join("");
+  $("nova-colmeia").disabled = !apiarios.length;
 }
 
 async function carregar() {
@@ -84,14 +76,16 @@ async function carregar() {
   try {
     // shortcut: até 1000 registros por listagem; paginar quando o cadastro ultrapassar esse limite.
     const resultado = await Promise.all([
-      requisitar("/apiarios?limite=1000"), requisitar("/colmeias?limite=1000")
+      requisitar("/apiarios?usuario_id=" + usuario.id + "&limite=1000"),
+      requisitar("/colmeias?limite=1000")
     ]);
-    [apiarios, colmeias] = resultado;
-    $("apiario").innerHTML = '<option value="">Selecione o apiário</option>' + apiarios.map(a =>
-      `<option value="${a.id}">${esc(a.nome)}</option>`).join("");
+    apiarios = resultado[0];
+    // Mostra só as colmeias dos apiários deste usuário
+    const meus = new Set(apiarios.map(a => a.id));
+    colmeias = resultado[1].filter(c => meus.has(c.apiario_id));
+    preencherApiarios();
     renderizar();
-    $("nova-colmeia").disabled = !apiarios.length;
-    if (!apiarios.length) toast("Cadastre um apiário pela API antes de cadastrar colmeias.", false);
+    if (!apiarios.length) toast("Cadastre um apiário antes de cadastrar colmeias.", false);
     return true;
   } catch (erro) {
     apiarios = [];
@@ -145,6 +139,41 @@ $("form").onsubmit = async e => {
   } finally {
     botao.disabled = false;
     botao.textContent = "Salvar colmeia";
+  }
+};
+
+// ---------- Cadastro de apiário (POST /apiarios) ----------
+
+$("form-apiario").onsubmit = async e => {
+  e.preventDefault();
+  const botao = $("salvar-apiario");
+  if (botao.disabled) return;
+  const nome = $("apiario-nome").value, local = $("apiario-local").value;
+  const erros = {
+    "apiario-nome": !nome.trim() ? "Informe o nome do apiário."
+      : nome !== nome.trim() ? "Remova os espaços no início ou no fim."
+      : nome.length > 120 ? "Use até 120 caracteres." : "",
+    "apiario-local": local.length > 255 ? "Use até 255 caracteres." : ""
+  };
+  camposApiario.forEach(c => marcar(c, erros[c]));
+  const primeiro = camposApiario.find(c => erros[c]);
+  if (primeiro) return $(primeiro).focus();
+
+  botao.disabled = true;
+  botao.textContent = "Salvando...";
+  try {
+    const salvo = await requisitar("/apiarios", "POST",
+      {usuario_id: usuario.id, nome, localizacao: local.trim() || null});
+    apiarios.push(salvo);
+    preencherApiarios();
+    renderizar();
+    mostrar("lista");
+    toast("Apiário cadastrado! Agora você já pode cadastrar colmeias.", true);
+  } catch (erro) {
+    toast(erro.message, false);
+  } finally {
+    botao.disabled = false;
+    botao.textContent = "Salvar apiário";
   }
 };
 

@@ -41,15 +41,15 @@
     <!-- ========== FORMULÁRIO DE LOGIN ========== -->
     <section class="auth-cartao">
       <h1>Entrar na minha conta</h1>
-      <p class="auth-subtitulo">Use seu nome de usuário ou e-mail</p>
+      <p class="auth-subtitulo">Use o e-mail cadastrado</p>
 
       <p class="auth-aviso" id="aviso" hidden role="status">Conta criada com sucesso! Entre para continuar.</p>
 
       <form id="form" novalidate>
 
-        <label for="identificador">Nome de usuário ou e-mail</label>
-        <input id="identificador" placeholder="Seu nome de usuário ou e-mail" autocomplete="username">
-        <p class="erro" id="erro-identificador"></p>
+        <label for="email">E-mail</label>
+        <input id="email" type="text" inputmode="email" placeholder="Seu e-mail" autocomplete="username">
+        <p class="erro" id="erro-email"></p>
 
         <label for="senha">Senha</label>
         <input id="senha" type="password" placeholder="Sua senha" autocomplete="current-password">
@@ -57,7 +57,7 @@
 
         <p class="erro erro-geral" id="erro-geral"></p>
 
-        <button class="botao" type="submit">Entrar</button>
+        <button class="botao" type="submit" id="entrar">Entrar</button>
       </form>
 
       <p class="auth-rodape">Ainda não tem conta? <a href="cadastro.html">Criar conta</a></p>
@@ -68,6 +68,8 @@
   <script src="js/voltar.js"></script>
 
   <script src="js/auth.js"></script>
+
+  <script src="js/api.js"></script>
 
   <script src="js/login.js"></script>
 
