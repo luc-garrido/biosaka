@@ -1,4 +1,5 @@
-// Biosaka - Lógica da página de criação de conta
+// Biosaka - Lógica da página de criação de conta (POST /api/usuarios)
+// A senha é enviada uma única vez para a API, que guarda apenas o hash.
 
 
 // ---------- Funções auxiliares ----------
@@ -6,7 +7,7 @@
 // Atalho para document.getElementById
 const $ = id => document.getElementById(id);
 
-const campos = ["usuario", "email", "telefone", "cidade", "estado", "pais", "senha", "confirmar"];
+const campos = ["nome", "email", "telefone", "senha", "confirmar"];
 
 // Mostra ou limpa o erro de um campo
 function marcar(campo, mensagem) {
@@ -14,48 +15,42 @@ function marcar(campo, mensagem) {
   $(campo).toggleAttribute("aria-invalid", !!mensagem);
 }
 
+// "(11) 91234-5678" → "+5511912345678" (formato internacional que a API exige)
+const telefoneInternacional = telefone => "+55" + telefone.replace(/\D/g, "");
+
 
 // ---------- Validação do formulário ----------
 
-function validar(contas) {
+function validar() {
   // Sem autocorreção: os valores são lidos exatamente como foram digitados
-  const usuario = $("usuario").value;
+  const nome = $("nome").value;
   const email = $("email").value;
   const telefone = $("telefone").value;
   const senha = $("senha").value;
   const confirmar = $("confirmar").value;
 
-  // Compara ignorando maiúsculas e minúsculas
-  const jaExiste = (campo, valor) =>
-    contas.some(c => c[campo].toLowerCase() === valor.toLowerCase());
-
   const erros = {
-    usuario: !usuario
-      ? "Informe o nome de usuário."
-      : !/^[\w.À-ÿ]{3,20}$/.test(usuario)
-        ? "Use de 3 a 20 letras, números, ponto ou _ (sem espaços)."
-        : jaExiste("usuario", usuario)
-          ? "Esse nome de usuário já está em uso."
+    nome: !nome.trim()
+      ? "Informe seu nome."
+      : nome !== nome.trim() || /\s{2,}/.test(nome)
+        ? "Remova os espaços extras (no início, no fim ou repetidos)."
+        : nome.length < 2 || nome.length > 120
+          ? "Use de 2 a 120 caracteres."
           : "",
     email: !email
       ? "Informe o e-mail."
       : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
         ? "Digite um e-mail válido (ex.: nome@email.com)."
-        : jaExiste("email", email)
-          ? "Esse e-mail já está cadastrado."
-          : "",
+        : "",
     telefone: !telefone
       ? "Informe o telefone."
       : !/^\([1-9]\d\) (9\d{4}|\d{4})-\d{4}$/.test(telefone)
         ? "Use o formato (11) 91234-5678."
         : "",
-    cidade: erroDeLugar($("cidade").value, "a cidade"),
-    estado: erroDeLugar($("estado").value, "o estado"),
-    pais: erroDeLugar($("pais").value, "o país"),
     senha: !senha
       ? "Crie uma senha."
-      : senha.length < 6
-        ? "A senha deve ter pelo menos 6 caracteres."
+      : senha.length < 8
+        ? "A senha deve ter pelo menos 8 caracteres."
         : "",
     confirmar: !confirmar
       ? "Confirme a senha."
@@ -75,29 +70,29 @@ function validar(contas) {
 
 // ---------- Envio do formulário ----------
 
-$("form").onsubmit = e => {
+$("form").onsubmit = async e => {
   e.preventDefault();
   $("erro-geral").textContent = "";
+  if (!validar()) return;
 
-  const contas = lerContas();
-  if (!validar(contas)) return;
-
-  // ONDE SALVAR NO DATASET: aqui a nova conta é gravada (ver auth.js).
-  contas.push({
-    usuario: $("usuario").value,
-    email: $("email").value,
-    telefone: $("telefone").value,
-    cidade: $("cidade").value,
-    estado: $("estado").value,
-    pais: $("pais").value,
-    senha: $("senha").value
-  });
-
-  if (!salvarContas(contas)) {
-    $("erro-geral").textContent = "Não foi possível salvar a conta. Tente novamente.";
-    return;
+  const botao = $("continuar");
+  botao.disabled = true;
+  botao.textContent = "Criando conta...";
+  try {
+    await requisitar("/usuarios", "POST", {
+      nome: $("nome").value,
+      telefone: telefoneInternacional($("telefone").value),
+      email: $("email").value,
+      senha: $("senha").value
+    });
+    // Volta ao login com o aviso de conta criada
+    location.href = "login.html?cadastro=ok";
+  } catch (erro) {
+    $("erro-geral").textContent = erro.status === 409
+      ? "Esse e-mail ou telefone já está cadastrado."
+      : erro.message;
+  } finally {
+    botao.disabled = false;
+    botao.textContent = "Continuar";
   }
-
-  // Volta ao login com o aviso de conta criada
-  location.href = "login.html?cadastro=ok";
 };

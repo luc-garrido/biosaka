@@ -332,3 +332,7 @@ select:focus {
 .card .botao-link {
   margin-top: auto;
 }
+
+.card .botao-link + button {
+  margin-top: 8px;
+}

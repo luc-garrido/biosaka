@@ -56,12 +56,12 @@ class ServidorLocal(SimpleHTTPRequestHandler):
         if not url.path.startswith("/api/") or url.scheme or url.netloc:
             return self.responder(404, "Operação não disponível na demonstração.")
         caminho = url.path.removeprefix("/api")
-        permitida = (self.command == "GET" and re.fullmatch(r"/(apiarios|colmeias)(/\d+)?", caminho)
-                      and not re.fullmatch(r"/apiarios/\d+", caminho))
-        permitida = permitida or (self.command == "POST" and caminho == "/colmeias")
-        permitida = permitida or (self.command == "PUT" and re.fullmatch(r"/colmeias/\d+", caminho))
-        if not permitida:
+        if not self.permitida(caminho):
             return self.responder(404, "Operação não disponível na demonstração.")
+        publica = self.command == "POST" and caminho in ("/auth/login", "/usuarios")
+        autorizacao = self.headers.get("Authorization", "")
+        if not publica and not re.fullmatch(r"Bearer [A-Za-z0-9_\-.]{20,2048}", autorizacao):
+            return self.responder(401, "Entre na sua conta para continuar.")
         corpo = None
         if self.command != "GET":
             if self.headers.get("Content-Type", "").split(";")[0] != "application/json":
@@ -74,8 +74,10 @@ class ServidorLocal(SimpleHTTPRequestHandler):
                 return self.responder(413, "Corpo ausente ou muito grande.")
             corpo = self.rfile.read(tamanho)
         destino = "http://127.0.0.1:8000" + caminho + ("?" + url.query if url.query else "")
-        pedido = Request(destino, data=corpo, method=self.command,
-                         headers={"X-API-Key": API_TOKEN, "Content-Type": "application/json"})
+        cabecalhos = {"X-API-Key": API_TOKEN, "Content-Type": "application/json"}
+        if not publica:
+            cabecalhos["Authorization"] = autorizacao
+        pedido = Request(destino, data=corpo, method=self.command, headers=cabecalhos)
         try:
             with urlopen(pedido, timeout=15) as resposta:
                 self.responder(resposta.status, resposta.read())
@@ -84,11 +86,21 @@ class ServidorLocal(SimpleHTTPRequestHandler):
         except (URLError, TimeoutError):
             self.responder(503, "API indisponível. Confira o servidor na porta 8000.")
 
+    ROTAS = {
+        "GET": (r"/apiarios", r"/colmeias", r"/colmeias/\d+", r"/colmeias/\d+/diagnostico",
+                r"/inspecoes", r"/series", r"/series/\d+/leituras"),
+        "POST": (r"/auth/login", r"/usuarios", r"/apiarios", r"/colmeias", r"/inspecoes"),
+        "PUT": (r"/colmeias/\d+",),
+    }
+
+    def permitida(self, caminho):
+        return any(re.fullmatch(rota, caminho) for rota in self.ROTAS.get(self.command, ()))
+
     do_POST = encaminhar
     do_PUT = encaminhar
 
 
 if __name__ == "__main__":
-    # shortcut: console administrativo no loopback; exigir login e autorização antes de uso multiusuário.
+    # O navegador nunca recebe a chave administrativa; cada pedido de dados exige o token do login.
     print("Demonstração local: http://127.0.0.1:5173/login.html")
     ThreadingHTTPServer(("127.0.0.1", 5173), ServidorLocal).serve_forever()

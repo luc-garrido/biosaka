@@ -1,85 +1,59 @@
-// Biosaka - Funções de conta e sessão
-// Sem servidor: contas e sessão ficam no localStorage. Apenas demonstração, não é seguro.
+// Biosaka - Sessão do usuário
+// A senha NUNCA fica no navegador: ela vai para a API, que devolve um token.
+// Guardamos só o token (e o nome/id públicos do usuário, para mostrar "Olá, ...")
+// no sessionStorage, que é apagado quando a aba é fechada.
+
+const CHAVE_TOKEN = "biosaka_token";
+const CHAVE_USUARIO = "biosaka_usuario";
 
 
-// =====================================================================
-// ARMAZENAMENTO DE INFORMAÇÕES — VINCULAR O DATASET AQUI
-// ---------------------------------------------------------------------
-// Hoje as contas e a sessão ficam no localStorage do navegador
-// (funciona sem servidor, mas serve apenas para demonstração).
-// Para usar o dataset real, troque o corpo das funções lerContas(),
-// salvarContas(), lerSessao(), iniciarSessao() e encerrarSessao() por
-// chamadas ao dataset/API. Exemplo (comentado, para ser ativado depois):
-//
-//   const resposta = await fetch("URL_DO_DATASET_DE_CONTAS_AQUI");
-//   const contas = await resposta.json();
-//
-// Campos de cada conta: usuario, email, telefone, cidade, estado, pais, senha
-// (em produção a senha NUNCA deve ser guardada em texto puro).
-// =====================================================================
-const CHAVE_CONTAS = "biosaka_contas";
-const CHAVE_SESSAO = "biosaka_sessao";
-
-
-// ---------- Contas cadastradas ----------
-
-function lerContas() {
+// Faz o login na API e guarda o token. Lança um Error com a mensagem se falhar.
+async function entrar(email, senha) {
+  const resposta = await requisitar("/auth/login", "POST", {email, senha});
   try {
-    return JSON.parse(localStorage.getItem(CHAVE_CONTAS)) || [];
+    sessionStorage.setItem(CHAVE_TOKEN, resposta.access_token);
+    sessionStorage.setItem(CHAVE_USUARIO, JSON.stringify({
+      id: resposta.usuario.id, nome: resposta.usuario.nome
+    }));
   } catch (erro) {
-    return [];
+    throw new Error("O navegador bloqueou o armazenamento da sessão.");
   }
 }
 
-function salvarContas(contas) {
+// Apaga a sessão e volta para o login
+function sair() {
   try {
-    localStorage.setItem(CHAVE_CONTAS, JSON.stringify(contas));
-    return true;
+    sessionStorage.removeItem(CHAVE_TOKEN);
+    sessionStorage.removeItem(CHAVE_USUARIO);
   } catch (erro) {
-    return false;
+    // nada a fazer
   }
+  location.replace("login.html");
 }
 
-
-// ---------- Sessão ----------
-
-function lerSessao() {
+// Token atual ou null
+function token() {
   try {
-    return localStorage.getItem(CHAVE_SESSAO);
+    return sessionStorage.getItem(CHAVE_TOKEN);
   } catch (erro) {
     return null;
   }
 }
 
-function iniciarSessao(usuario) {
+// {id, nome} do usuário logado ou null
+function usuarioLogado() {
   try {
-    localStorage.setItem(CHAVE_SESSAO, usuario);
+    return JSON.parse(sessionStorage.getItem(CHAVE_USUARIO));
   } catch (erro) {
-    // sem armazenamento: o login não será lembrado
+    return null;
   }
 }
 
-function encerrarSessao() {
-  try {
-    localStorage.removeItem(CHAVE_SESSAO);
-  } catch (erro) {
-    // nada a fazer
+// Usado no topo das páginas logadas: sem token, vai para o login
+function exigirLogin() {
+  if (!token() || !usuarioLogado()) {
+    location.replace("login.html");
+    return false;
   }
-}
-
-
-// ---------- Validação compartilhada (sem autocorreção) ----------
-// Nada é cortado, trocado ou ajustado em silêncio: se o valor está errado,
-// a função devolve a mensagem de erro (ou "" quando está tudo certo).
-
-// Valida cidade, estado ou país. "rotulo" é o texto do pedido (ex.: "a cidade")
-function erroDeLugar(valor, rotulo) {
-  if (!valor.trim()) return `Informe ${rotulo}.`;
-  if (valor !== valor.trim() || /\s{2,}/.test(valor))
-    return "Remova os espaços extras (no início, no fim ou repetidos).";
-  if (valor.length < 2 || valor.length > 60)
-    return "Use de 2 a 60 caracteres.";
-  if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’. -]*$/.test(valor))
-    return "Use apenas letras, espaços, hífen, apóstrofo ou ponto.";
-  return "";
+  return true;
 }

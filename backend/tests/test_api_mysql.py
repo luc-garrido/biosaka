@@ -92,3 +92,19 @@ def test_leituras_preservam_repeticoes_precisao_e_paginacao(client, colmeia):
     assert client.get(caminho, params={"inicio": "2017-01-01T00:00:00Z"}).status_code == 422
     assert client.get("/series", params={"colmeia_id": colmeia["id"]}).json()[0]["id"] == identificador
     assert client.delete(f"/colmeias/{colmeia['id']}").status_code == 409
+
+
+def test_login_devolve_token_e_token_invalido_e_recusado(client):
+    email = "login" + str(abs(hash(object())))[:8] + "@teste.com"
+    usuario = client.post("/usuarios", json={"nome": "Login", "telefone": "+5511" + email[5:13].ljust(9, "1"),
+                                            "email": email, "senha": "senha-de-teste-1"})
+    assert usuario.status_code == 201, usuario.text
+    resposta = client.post("/auth/login", json={"email": email, "senha": "senha-de-teste-1"})
+    assert resposta.status_code == 200, resposta.text
+    corpo = resposta.json()
+    assert corpo["usuario"]["id"] == usuario.json()["id"] and "senha_hash" not in corpo["usuario"]
+    bearer = {"Authorization": "Bearer " + corpo["access_token"]}
+    assert client.get("/colmeias", headers=bearer).status_code == 200
+    assert client.get("/colmeias", headers={"Authorization": "Bearer invalido"}).status_code == 401
+    assert client.post("/auth/login", json={"email": email, "senha": "senha-errada-123"}).status_code == 401
+    assert client.post("/auth/login", json={"email": "ninguem@teste.com", "senha": "qualquer-1"}).status_code == 401

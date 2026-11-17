@@ -10,7 +10,7 @@ site = FastAPI(title="BIOSAKA API", version="0.3.0",
                description="API administrativa local. Seis tabelas, MySQL e Beehive Metrics.")
 site.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS,
                     allow_credentials=False, allow_methods=["GET", "POST", "PUT", "DELETE"],
-                    allow_headers=["Content-Type", "X-API-Key"])
+                    allow_headers=["Content-Type", "X-API-Key", "Authorization"])
 site.include_router(roteador)
 app = site
 

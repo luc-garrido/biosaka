@@ -58,6 +58,8 @@ Todas as rotas de dados exigem a chave administrativa local.
 
 - GET /health: conexao e estrutura.
 - POST/GET /usuarios: cadastro e consulta sem expor senha/hash.
+- POST /auth/login: e-mail e senha; devolve token JWT (30 min) e dados publicos do usuario.
+  Se o pedido trouxer Authorization: Bearer, o token precisa ser valido (senao 401).
 - POST/GET /apiarios; PUT/DELETE /apiarios/{id}.
 - POST/GET /colmeias; GET/PUT/DELETE /colmeias/{id}.
 - POST/GET /inspecoes; PUT/DELETE /inspecoes/{id}.

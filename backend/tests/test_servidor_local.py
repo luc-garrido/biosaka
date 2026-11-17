@@ -11,6 +11,8 @@ import pytest
 
 from frontend.servidor import ServidorLocal
 
+BEARER = "Bearer token.ficticio.de-teste-com-tamanho-ok"
+
 
 @pytest.fixture
 def console_local():
@@ -21,7 +23,7 @@ def console_local():
 
     def pedir(method, path, body=None, headers=None):
         conn = HTTPConnection("127.0.0.1", server.server_port, timeout=3)
-        conn.request(method, path, body=body, headers={"Host": host, **(headers or {})})
+        conn.request(method, path, body=body, headers={"Host": host, "Authorization": BEARER, **(headers or {})})
         response = conn.getresponse()
         result = response.status, response.read()
         conn.close()
@@ -45,6 +47,7 @@ def test_encaminha_com_chave_so_no_servidor(console_local):
         request = upstream.call_args.args[0]
         assert request.full_url == "http://127.0.0.1:8000/colmeias?limite=1000"
         assert request.get_header("X-api-key") == "segredo-apenas-servidor"
+        assert request.get_header("Authorization") == BEARER
         assert b"segredo-apenas-servidor" not in body
         payload = '{"codigo":"COL-002","apiario_id":1}'
         assert pedir("POST", "/api/colmeias", payload, {"Origin":"http://"+host,"Content-Type":"application/json"})[0] == 200
@@ -75,3 +78,24 @@ def test_falha_da_api_e_duplicidade_sao_preservadas(console_local):
     with patch("frontend.servidor.urlopen", side_effect=erro):
         status, body = pedir("POST", "/api/colmeias", "{}", {"Origin":"http://"+host,"Content-Type":"application/json"})
         assert status == 409 and json.loads(body)["detail"] == "Duplicado"
+
+
+def test_exige_token_exceto_login_e_cadastro(console_local):
+    pedir, host = console_local
+    class Resposta:
+        status = 200
+        def read(self): return b'{}'
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+    with patch("frontend.servidor.urlopen", return_value=Resposta()) as upstream:
+        assert pedir("GET", "/api/colmeias", headers={"Authorization": ""})[0] == 401
+        assert pedir("GET", "/api/colmeias", headers={"Authorization": "Basic abc"})[0] == 401
+        upstream.assert_not_called()
+        json_local = {"Origin": "http://" + host, "Content-Type": "application/json", "Authorization": ""}
+        assert pedir("POST", "/api/auth/login", '{"email":"a@b.co","senha":"12345678"}', json_local)[0] == 200
+        assert upstream.call_args.args[0].get_header("Authorization") is None
+        assert pedir("POST", "/api/usuarios", '{"nome":"A"}', json_local)[0] == 200
+        assert pedir("GET", "/api/series/3/leituras?limite=10")[0] == 200
+        assert pedir("GET", "/api/colmeias/9/diagnostico")[0] == 200
+        assert pedir("POST", "/api/inspecoes", "{}", {"Origin": "http://" + host, "Content-Type": "application/json"})[0] == 200
+        assert pedir("DELETE", "/api/colmeias/1")[0] in (404, 501)

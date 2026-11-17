@@ -1,4 +1,3 @@
-import hashlib
 import secrets
 from datetime import datetime
 from typing import Annotated
@@ -8,11 +7,12 @@ from fastapi.security import APIKeyHeader
 from sqlalchemy import func, inspect, select, text
 from sqlalchemy.orm import Session
 
+from .auth import criar_token, gerar_hash, token_se_enviado, verificar_senha
 from .banco import Apiario, Base, Colmeia, Inspecao, Leitura, SerieDataset, Usuario, get_db
 from .config import API_TOKEN
 from .schemas import (ApiarioInput, ApiarioOutput, ColmeiaInput, ColmeiaOutput,
-                      InspecaoInput, InspecaoOutput, PaginaLeituras, SerieOutput,
-                      UsuarioInput, UsuarioOutput)
+                      InspecaoInput, InspecaoOutput, LoginInput, PaginaLeituras,
+                      SerieOutput, TokenOutput, UsuarioInput, UsuarioOutput)
 
 cabecalho = APIKeyHeader(name="X-API-Key", auto_error=False)
 
@@ -23,7 +23,7 @@ def chave_local(chave: str | None = Depends(cabecalho)):
         raise HTTPException(401, "Chave de acesso invalida.")
 
 
-roteador = APIRouter(dependencies=[Depends(chave_local)])
+roteador = APIRouter(dependencies=[Depends(chave_local), Depends(token_se_enviado)])
 DB = Annotated[Session, Depends(get_db)]
 Limite = Annotated[int, Query(ge=1, le=1000)]
 Offset = Annotated[int, Query(ge=0, le=10000000)]
@@ -60,10 +60,16 @@ def health(db: DB):
 @roteador.post("/usuarios", response_model=UsuarioOutput, status_code=201, tags=["Usuarios"])
 def cadastrar_usuario(dados: UsuarioInput, db: DB):
     campos = dados.model_dump(exclude={"senha"})
-    salt = secrets.token_bytes(16)
-    digest = hashlib.scrypt(dados.senha.get_secret_value().encode(), salt=salt, n=16384, r=8, p=1)
-    campos["senha_hash"] = f"scrypt$16384$8$1$" + salt.hex() + "$" + digest.hex()
+    campos["senha_hash"] = gerar_hash(dados.senha.get_secret_value())
     return salvar(db, Usuario(**campos))
+
+
+@roteador.post("/auth/login", response_model=TokenOutput, tags=["Usuarios"])
+def entrar(dados: LoginInput, db: DB):
+    usuario = db.scalar(select(Usuario).where(Usuario.email == dados.email))
+    if usuario is None or not verificar_senha(dados.senha.get_secret_value(), usuario.senha_hash):
+        raise HTTPException(401, "E-mail ou senha incorretos.")
+    return {"access_token": criar_token(usuario.id), "usuario": usuario}
 
 
 @roteador.get("/usuarios", response_model=list[UsuarioOutput], tags=["Usuarios"])
