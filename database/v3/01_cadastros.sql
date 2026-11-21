@@ -54,6 +54,7 @@ CREATE TABLE inspecoes (
     postura ENUM('observada', 'nao_observada', 'nao_avaliada') NOT NULL DEFAULT 'nao_avaliada',
     reserva_alimentar ENUM('baixa', 'adequada', 'nao_avaliada') NOT NULL DEFAULT 'nao_avaliada',
     observacoes VARCHAR(2000) NOT NULL DEFAULT '',
+    houve_manejo BOOLEAN NOT NULL DEFAULT FALSE,
     criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     INDEX idx_inspecoes_colmeia_data (colmeia_id, data_inspecao, id),

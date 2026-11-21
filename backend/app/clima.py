@@ -35,6 +35,7 @@ from .motor.tipos import ContextoClima
 # Dicionário de cache: (lat, lon) -> (tempo_em_que_expira, ContextoClima)
 _CACHE_CLIMA = {}
 TTL_CACHE_SEGUNDOS = 1800  # 1800 segundos = 30 minutos
+CAMPOS_CLIMA = ("temperature_2m", "relative_humidity_2m", "precipitation", "wind_speed_10m")
 
 
 def obter_clima_indisponivel() -> ContextoClima:
@@ -71,14 +72,24 @@ def consultar_clima(latitude: float, longitude: float) -> ContextoClima:
 
         if resposta.status_code == 200:
             dados = resposta.json().get("current", {})
-            precipitacao = float(dados.get("precipitation", 0.0))
+            if any(dados.get(campo) is None for campo in CAMPOS_CLIMA):
+                return obter_clima_indisponivel()
+
+            temperatura = float(dados["temperature_2m"])
+            umidade = float(dados["relative_humidity_2m"])
+            precipitacao = float(dados["precipitation"])
+            vento = float(dados["wind_speed_10m"])
+
+            if not (-50 <= temperatura <= 60 and 0 <= umidade <= 100
+                    and vento >= 0 and precipitacao >= 0):
+                return obter_clima_indisponivel()            
 
             contexto = ContextoClima(
-                temperatura_celsius=float(dados.get("temperature_2m", 0.0)),
-                chovendo=(precipitacao > 0.1),
-                vento_kmh=float(dados.get("wind_speed_10m", 0.0)),
+                temperatura_celsius=temperatura,
+                chovendo=(precipitacao>0.1),
+                vento_kmh=vento,
                 dados_confiaveis=True,
-                umidade_pct=float(dados.get("relative_humidity_2m", 0.0)),
+                umidade_pct=umidade,
             )
 
             # 2. SALVA NO CACHE: Guarda o resultado pelos próximos 30 minutos

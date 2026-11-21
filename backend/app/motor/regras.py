@@ -144,7 +144,8 @@ def avaliar_ponto_colheita(
     limiar_minimo_melgueira = peso_meta_melgueira_kg - tara_aceitavel  # ex: 13.5 kg
 
     # 1. Melgueira atingiu a meta e o peso estabilizou (maturação/operculação)
-    if features.reserva_liquida_alimento_kg >= peso_meta_melgueira_kg and abs(features.delta_24h) <= 0.3:
+    peso_estavel = features.delta_24h is not None and abs(features.delta_24h) <= 0.3
+    if features.reserva_liquida_alimento_kg >= peso_meta_melgueira_kg and peso_estavel:
         return ResultadoRegra(
             codigo=CodigoRegra.RF03,
             semaforo=Semaforo.VERDE,
@@ -176,15 +177,18 @@ def avaliar_ponto_colheita(
 
 
 def avaliar_risco_fome(features: FeaturesSinal) -> ResultadoRegra:
-    if not features.dados_suficientes:
-        return ResultadoRegra(
-            codigo=CodigoRegra.RF04,
-            semaforo=Semaforo.AMARELO,
-            disparou=False,
-            motivo="Dados insuficientes da balança para avaliar reservas de alimento.",
-            confianca=Confianca.BAIXA,
-            acao_sugerida="Verifique a conexão da balança e aguarde novas leituras."
-        )
+    dados_insuficientes = ResultadoRegra(
+        codigo=CodigoRegra.RF04,
+        semaforo=Semaforo.AMARELO,
+        disparou=False,
+        motivo="Dados insuficientes da balança para avaliar reservas de alimento.",
+        confianca=Confianca.BAIXA,
+        acao_sugerida="Verifique a conexão da balança e aguarde novas leituras."
+    )
+
+    # Sem nenhuma leitura, a reserva 0.0 é só marcador: não pode virar alerta de fome.
+    if not features.possui_leituras:
+        return dados_insuficientes
 
     if not features.tara_definida:
         return ResultadoRegra(
@@ -208,8 +212,14 @@ def avaliar_risco_fome(features: FeaturesSinal) -> ResultadoRegra:
             confianca=Confianca.ALTA,
             acao_sugerida="ALIMENTE SUAS ABELHAS AGORA! Risco iminente de inanição."
         )
-    if features.reserva_liquida_alimento_kg <= limiar_amarelo and (features.delta_7d < 0 or features.delta_24h < 0):
-        perda = abs(features.delta_7d) if features.delta_7d < 0 else abs(features.delta_24h)
+
+    # O alerta crítico acima só usa a reserva atual; daqui para baixo precisamos dos deltas.
+    if not features.dados_suficientes:
+        return dados_insuficientes
+
+    perdas = [d for d in (features.delta_7d, features.delta_24h) if d is not None and d < 0]
+    if features.reserva_liquida_alimento_kg <= limiar_amarelo and perdas:
+        perda = abs(perdas[0])
         return ResultadoRegra(
             codigo=CodigoRegra.RF04,
             semaforo=Semaforo.AMARELO,

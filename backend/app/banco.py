@@ -2,7 +2,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, Date, DateTime, ForeignKey, Index, Numeric, String, UniqueConstraint, create_engine, text
+from sqlalchemy import Boolean, CheckConstraint, Date, DateTime, ForeignKey, Index, Numeric, String, UniqueConstraint, create_engine, text
 from sqlalchemy.dialects.mysql import BIGINT, CHAR, ENUM, INTEGER, TIMESTAMP
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
@@ -60,6 +60,7 @@ class Inspecao(Base):
     postura: Mapped[str] = mapped_column(ENUM("observada", "nao_observada", "nao_avaliada"), server_default="nao_avaliada")
     reserva_alimentar: Mapped[str] = mapped_column(ENUM("baixa", "adequada", "nao_avaliada"), server_default="nao_avaliada")
     observacoes: Mapped[str] = mapped_column(String(2000), server_default="")
+    houve_manejo: Mapped[bool] = mapped_column(Boolean, server_default=text("0"))
     criado_em: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
 
 

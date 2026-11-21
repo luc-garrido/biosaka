@@ -74,23 +74,17 @@ def verificar_manejo_recente(
     db: Session,
     colmeia_id: int,
     data_referencia: datetime,
-    janela_dias: int = 1
-) -> bool:
-    """
-    Verifica se houve alguma inspeção humana recente registrada no banco para essa colmeia.
-    """
-    data_limite = (data_referencia - timedelta(days=janela_dias)).date()
-    ref_date = data_referencia.date()
-
-    inspecao = db.scalars(
-        select(Inspecao).where(
+    janela_dias: int = 1):
+    inicio = (data_referencia - timedelta(days=janela_dias)).date()
+    total = db.scalar(
+        select(func.count()).select_from(Inspecao).where(
             Inspecao.colmeia_id == colmeia_id,
-            Inspecao.data_inspecao >= data_limite,
-            Inspecao.data_inspecao <= ref_date,
+            Inspecao.houve_manejo.is_(True),
+            Inspecao.data_inspecao >= inicio,
+            Inspecao.data_inspecao <= data_referencia.date(),
         )
-    ).first()
-
-    return inspecao is not None
+    )
+    return (total or 0) > 0
 
 
 def obter_features_colmeia(

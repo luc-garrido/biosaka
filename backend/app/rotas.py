@@ -1,4 +1,3 @@
-import hashlib
 import secrets
 from datetime import datetime
 from typing import Annotated
@@ -8,6 +7,7 @@ from fastapi.security import APIKeyHeader
 from sqlalchemy import func, inspect, select, text
 from sqlalchemy.orm import Session
 
+from .auth import gerar_hash
 from .banco import Apiario, Base, Colmeia, Inspecao, Leitura, SerieDataset, Usuario, get_db
 from .config import API_TOKEN
 from .schemas import (ApiarioInput, ApiarioOutput, ColmeiaInput, ColmeiaOutput,
@@ -60,9 +60,7 @@ def health(db: DB):
 @roteador.post("/usuarios", response_model=UsuarioOutput, status_code=201, tags=["Usuarios"])
 def cadastrar_usuario(dados: UsuarioInput, db: DB):
     campos = dados.model_dump(exclude={"senha"})
-    salt = secrets.token_bytes(16)
-    digest = hashlib.scrypt(dados.senha.get_secret_value().encode(), salt=salt, n=16384, r=8, p=1)
-    campos["senha_hash"] = f"scrypt$16384$8$1$" + salt.hex() + "$" + digest.hex()
+    campos["senha_hash"] = gerar_hash(dados.senha.get_secret_value())
     return salvar(db, Usuario(**campos))
 
 
