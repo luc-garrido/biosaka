@@ -121,20 +121,19 @@ def extrair_features_sinal(
     if not leituras_validas:
         return FeaturesSinal(
             peso_noturno_atual=0.0,
-            delta_24h=None,
-            delta_7d=None,
+            delta_24h=0.0,
+            delta_7d=0.0,
             queda_abrupta_detectada=False,
             reserva_liquida_alimento_kg=0.0,
             dados_suficientes=False,
-            tara_definida=tara_valida,
-            possui_leituras=False
+            tara_definida=tara_valida
         )
 
     peso_noturno = extrair_peso_noturno(leituras_validas, data_referencia)
     peso_base = peso_noturno if peso_noturno is not None else leituras_validas[-1].peso_kg
 
     peso_ontem = extrair_peso_noturno(leituras_validas, data_referencia - timedelta(days=1))
-    delta_24h = round(peso_base - peso_ontem, 2) if peso_ontem is not None else None
+    delta_24h = round(peso_base - peso_ontem, 2) if peso_ontem is not None else 0.0
 
     # Busca no 7º dia; se faltar leitura exata, busca em dias vizinhos (6, 8, 5)
     peso_7d = extrair_peso_noturno(leituras_validas, data_referencia - timedelta(days=7))
@@ -143,7 +142,7 @@ def extrair_features_sinal(
             peso_7d = extrair_peso_noturno(leituras_validas, data_referencia - timedelta(days=offset))
             if peso_7d is not None:
                 break
-    delta_7d = round(peso_base - peso_7d, 2) if peso_7d is not None else None
+    delta_7d = round(peso_base - peso_7d, 2) if peso_7d is not None else 0.0
 
     queda_abrupta = detectar_queda_abrupta(leituras_validas)
     tara_num = peso_tara_kg if tara_valida else 0.0
@@ -155,6 +154,6 @@ def extrair_features_sinal(
         delta_7d=delta_7d,
         queda_abrupta_detectada=queda_abrupta,
         reserva_liquida_alimento_kg=reserva_liquida,
-        dados_suficientes=(peso_ontem is not None and peso_7d is not None),
+        dados_suficientes=True,
         tara_definida=tara_valida
     )

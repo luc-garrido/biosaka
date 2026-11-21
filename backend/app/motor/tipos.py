@@ -64,14 +64,12 @@ class LeituraPura:
 @dataclass(frozen=True)
 class FeaturesSinal:
     peso_noturno_atual: float
-    delta_24h: Optional[float]
-    delta_7d: Optional[float]
+    delta_24h: float
+    delta_7d: float
     queda_abrupta_detectada: bool
     reserva_liquida_alimento_kg: float
     dados_suficientes: bool = True
     tara_definida: bool = True
-    # False quando não há nenhuma leitura válida (peso/reserva viram 0.0 só como marcador)
-    possui_leituras: bool = True
 
 @dataclass(frozen=True)
 class ContextoClima:
