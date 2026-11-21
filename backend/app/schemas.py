@@ -61,6 +61,7 @@ class InspecaoInput(Entrada):
     postura: Literal["observada", "nao_observada", "nao_avaliada"] = "nao_avaliada"
     reserva_alimentar: Literal["baixa", "adequada", "nao_avaliada"] = "nao_avaliada"
     observacoes: Annotated[str, Field(max_length=2000)] = ""
+    houve_manejo: bool = False
 
     @field_validator("data_inspecao")
     @classmethod
