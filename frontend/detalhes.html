@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Biosaka - Detalhes das colmeias</title>
+  <title>Biosaka - Detalhes da colmeia</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,29 +20,95 @@
   <!-- ========== CABEÇALHO ========== -->
   <header>
     <span>🐝 Biosaka</span>
-    <a href="login.html" id="sair">Desconectar</a>
+    <a href="login.html" id="sair">Sair</a>
   </header>
+
+  <div id="toast" hidden role="status"></div>
 
   <main>
 
-    <!-- ========== DETALHES DAS COLMEIAS ========== -->
     <a class="voltar" href="colmeias.html" data-voltar>
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H4" /><path d="M11 5l-7 7 7 7" /></svg>
       Voltar
     </a>
 
-    <h1 id="titulo">Detalhes das colmeias</h1>
-    <p class="suave" id="subtitulo">Leituras do sensor, histórico e recomendações de cada colmeia.</p>
+    <h1 id="titulo">Detalhes da colmeia</h1>
+    <p class="suave" id="subtitulo">Carregando…</p>
 
-    <div id="detalhes" class="detalhes"></div>
+    <div id="conteudo" class="detalhes" hidden>
+
+      <!-- ========== 1. DIAGNÓSTICO ========== -->
+      <article class="detalhe">
+        <h2>Diagnóstico</h2>
+        <div id="diagnostico" aria-live="polite"><p class="sem-leitura">Carregando…</p></div>
+      </article>
+
+      <!-- ========== 2. GRÁFICO DE PESO ========== -->
+      <article class="detalhe">
+        <h2>Peso da colmeia</h2>
+        <div class="periodo" role="group" aria-label="Período do gráfico">
+          <button class="secundario" data-dias="7">7 dias</button>
+          <button class="secundario" data-dias="30">30 dias</button>
+          <button class="secundario" data-dias="365">Ano</button>
+          <label>até <input type="date" id="fim-grafico" value="2017-06-30" min="2017-01-01" max="2017-12-31"></label>
+        </div>
+        <p class="sem-leitura" id="info-grafico" aria-live="polite"></p>
+        <div class="grafico"><canvas id="grafico" aria-label="Gráfico do peso da colmeia ao longo do tempo"></canvas></div>
+      </article>
+
+      <!-- ========== 3. INSPEÇÕES ========== -->
+      <article class="detalhe">
+        <h2>Inspeções</h2>
+        <ul class="historico" id="inspecoes" aria-live="polite"></ul>
+
+        <h3>Registrar inspeção</h3>
+        <form class="form-inspecao" id="form-inspecao" novalidate>
+          <label for="data-inspecao">Data</label>
+          <input id="data-inspecao" type="date">
+          <p class="erro" id="erro-data-inspecao"></p>
+
+          <label for="forca">Força do enxame</label>
+          <select id="forca">
+            <option value="nao_avaliada">Não avaliada</option>
+            <option value="fraca">Fraca</option>
+            <option value="media">Média</option>
+            <option value="forte">Forte</option>
+          </select>
+
+          <label for="postura">Postura da rainha</label>
+          <select id="postura">
+            <option value="nao_avaliada">Não avaliada</option>
+            <option value="observada">Observada</option>
+            <option value="nao_observada">Não observada</option>
+          </select>
+
+          <label for="reserva">Reserva de alimento</label>
+          <select id="reserva">
+            <option value="nao_avaliada">Não avaliada</option>
+            <option value="baixa">Baixa</option>
+            <option value="adequada">Adequada</option>
+          </select>
+
+          <label for="observacoes">Observações</label>
+          <textarea id="observacoes" rows="3" maxlength="2000" placeholder="O que você viu na colmeia?"></textarea>
+          <p class="erro" id="erro-observacoes"></p>
+
+          <button class="primario" id="salvar-inspecao">Salvar inspeção</button>
+        </form>
+      </article>
+
+    </div>
 
   </main>
+
+  <!-- Chart.js (gráfico de linha) via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <script src="js/voltar.js"></script>
 
   <script src="js/auth.js"></script>
 
-  <script src="js/dados.js"></script>
+  <script src="js/api.js"></script>
 
   <script src="js/detalhes.js"></script>
 

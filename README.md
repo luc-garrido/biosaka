@@ -58,6 +58,8 @@ Todas as rotas de dados exigem a chave administrativa local.
 
 - GET /health: conexao e estrutura.
 - POST/GET /usuarios: cadastro e consulta sem expor senha/hash.
+- POST /auth/login: e-mail e senha; devolve token JWT (30 min) e dados publicos do usuario.
+  Se o pedido trouxer Authorization: Bearer, o token precisa ser valido (senao 401).
 - POST/GET /apiarios; PUT/DELETE /apiarios/{id}.
 - POST/GET /colmeias; GET/PUT/DELETE /colmeias/{id}.
 - POST/GET /inspecoes; PUT/DELETE /inspecoes/{id}.
@@ -102,6 +104,12 @@ so o estado de outro ambiente. Consultas em database/v3/ver_peso_no_workbench.sq
 
 ## Testes
 
+Teste da tela de colmeias, sem dependências adicionais (Node.js 18+):
+
+```powershell
+node --test frontend/tests/colmeias.test.cjs
+```
+
 ```powershell
 .venv/Scripts/python.exe -m pip install -r requirements-dev.txt
 .venv/Scripts/python.exe -m pytest backend/tests -q
@@ -114,6 +122,36 @@ ao final; o banco biosaka_v3_dev e o dataset nao sao alterados.
 ## Limites atuais
 
 API administrativa para uso local. A chave compartilhada nao substitui login
-individual/JWT nem autorizacao por proprietario. O frontend ainda precisa
-ser integrado. Nao ha diagnostico, previsao agronomica, hardware, clima
+individual/JWT nem autorizacao por proprietario. A tela de colmeias consulta,
+cadastra e altera a situacao pela API; as demais telas ainda usam demonstracao local.
+Nao ha diagnostico integrado, previsao agronomica, hardware, clima
 nem envio de WhatsApp nesta implementacao.
+
+## Demonstrar a integracao de colmeias
+
+Com MySQL e API iniciados conforme acima, abra outro terminal na raiz:
+
+```powershell
+.venv/Scripts/python.exe frontend/servidor.py
+```
+
+1. Abra http://127.0.0.1:5173/login.html e entre pela conta de demonstracao local.
+2. A tela de colmeias carrega automaticamente. O servidor local encaminha as chamadas
+   /api para a FastAPI, lendo a chave do .env. A chave nao vai para o JavaScript,
+   para o armazenamento nem para as requisicoes do navegador.
+3. Selecione um apiario existente, cadastre uma colmeia e recarregue para
+   conferir a persistencia. Sem apiarios, crie primeiro usuario e apiario pelo Swagger.
+4. Use Desativar/Reativar e confira a situacao apos recarregar. A alteracao preserva
+   os campos de tara e rainha, sem excluir historico.
+
+No painel de rede devem aparecer GET /api/apiarios, GET /api/colmeias, POST /api/colmeias e
+GET/PUT /api/colmeias/{id}. A listagem mostra ate 1000 registros e a situacao cadastral;
+nao mostra diagnostico preditivo. Esta demonstracao administrativa acessa todos os
+registros da API: a sessao local nao restringe os dados por apicultor.
+
+O servidor da interface escuta somente em 127.0.0.1:5173, rejeita Host e origem
+externos e encaminha apenas consulta de apiarios e consulta/cadastro/alteracao de
+colmeias. As rotas originais da FastAPI continuam exigindo X-API-Key, inclusive no
+Swagger. Este servidor e um console local, nao uma solucao de autenticacao para
+publicacao na Internet. Login individual e autorizacao por proprietario continuam
+pendentes. Use frontend/servidor.py; o servidor estatico http.server nao encaminha /api.

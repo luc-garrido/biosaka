@@ -1,3 +1,4 @@
+"""Login com e-mail e senha e token JWT de curta duracao."""
 import hashlib
 import hmac
 import secrets
@@ -42,55 +43,52 @@ def verificar_senha(senha: str, hash_salvo: str | None) -> bool:
 HASH_FALSO = gerar_hash(secrets.token_urlsafe(16))
 
 
-def criar_token(usuario_id: int):
+def criar_token(usuario_id: int) -> str:
     agora = datetime.now(timezone.utc)
-
-    Conteudo = {
+    conteudo = {
         "sub": str(usuario_id),
         "iat": agora,
         "exp": agora + timedelta(minutes=TOKEN_MINUTOS),
         "iss": EMISSOR_JWT,
         "aud": AUDIENCIA_JWT,
     }
+    return jwt.encode(conteudo, JWT_SECRET, algorithm=JWT_ALGORITMO)
 
-    return jwt.encode(Conteudo, JWT_SECRET, algorithm=JWT_ALGORITMO)
 
 
 bearer = HTTPBearer(auto_error=False)
 
 
-def usuario_atual(db: Session = Depends(get_db), credenciais=Depends(bearer)):
 
+def usuario_atual(db: Session = Depends(get_db), credenciais=Depends(bearer)):
     erro = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Autenticação necessária ou token inválido.",
+        detail="Sessao expirada ou token invalido. Entre novamente.",
         headers={"WWW-Authenticate": "Bearer"},
     )
-
     if credenciais is None:
         raise erro
-
     try:
         dados = jwt.decode(
-            credenciais.credentials,
-            JWT_SECRET,
-            algorithms=[JWT_ALGORITMO],
-            issuer=EMISSOR_JWT,
-            audience=AUDIENCIA_JWT,
+            credenciais.credentials, JWT_SECRET, algorithms=[JWT_ALGORITMO],
+            issuer=EMISSOR_JWT, audience=AUDIENCIA_JWT,
             options={"require": ["sub", "iat", "exp", "iss", "aud"]},
         )
         usuario_id = int(dados["sub"])
-
         if not 0 < usuario_id < 2**64:
-            raise ValueError("Identificador inválido.")
+            raise ValueError("Identificador invalido.")
     except (jwt.PyJWTError, ValueError, TypeError):
         raise erro
-
     usuario = db.get(Usuario, usuario_id)
     if usuario is None:
         raise erro
-
     return usuario
 
 
 UsuarioAutenticado = Annotated[Usuario, Depends(usuario_atual)]
+
+
+def token_se_enviado(db: Session = Depends(get_db), credenciais=Depends(bearer)):
+    """Se o pedido trouxer Authorization: Bearer, o token precisa ser valido."""
+    if credenciais is not None:
+        usuario_atual(db, credenciais)

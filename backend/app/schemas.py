@@ -115,3 +115,4 @@ class TokenOutput(BaseModel):
     access_token: str
     token_type: str = "bearer"
     expires_in: int = 1800
+    usuario: UsuarioOutput

@@ -18,7 +18,7 @@
   <!-- ========== CABEÇALHO ========== -->
   <header>
     <span>🐝 Biosaka</span>
-    <a href="login.html" id="sair">Desconectar</a>
+    <a href="login.html" id="sair">Sair</a>
   </header>
 
   <div id="toast" hidden role="status"></div>
@@ -32,15 +32,16 @@
         Voltar
       </a>
 
-      <h1>Olá, <span id="nome-usuario">Eduardo</span></h1>
-      <p class="suave">Suas colmeias ativas:</p>
+      <h1>Olá, <span id="nome-usuario"></span></h1>
+      <p class="suave">Suas colmeias cadastradas no banco:</p>
 
       <div class="barra">
-        <a class="botao-link secundario" href="detalhes.html">Mais detalhes</a>
-        <button class="primario" onclick="abrirForm()">+ Nova colmeia</button>
+        <button class="secundario" id="atualizar" onclick="carregar()">Atualizar</button>
+        <button class="secundario" id="novo-apiario" onclick="abrirApiario()">+ Novo apiário</button>
+        <button class="primario" id="nova-colmeia" onclick="abrirForm()" disabled>+ Nova colmeia</button>
       </div>
 
-      <div id="lista" class="grade"></div>
+      <div id="lista" class="grade" aria-live="polite"></div>
     </section>
 
     <!-- ========== TELA 2: CADASTRO DE NOVA COLMEIA ========== -->
@@ -53,6 +54,10 @@
 
       <form class="form" id="form" novalidate>
         <h1>Cadastrar nova colmeia</h1>
+
+        <label for="apiario">Apiário</label>
+        <select id="apiario" aria-describedby="erro-apiario"></select>
+        <p class="erro" id="erro-apiario"></p>
 
         <label for="codigo">Código da colmeia</label>
         <input id="codigo" placeholder="Ex.: COL-004" autocomplete="off">
@@ -67,28 +72,40 @@
         </select>
         <p class="erro" id="erro-especie"></p>
 
-        <label for="cidade">Região: cidade</label>
-        <input id="cidade" placeholder="Ex.: Campinas" autocomplete="off">
-        <p class="erro" id="erro-cidade"></p>
-
-        <label for="estado">Região: estado</label>
-        <input id="estado" placeholder="Ex.: São Paulo" autocomplete="off">
-        <p class="erro" id="erro-estado"></p>
-
-        <label for="pais">Região: país</label>
-        <input id="pais" placeholder="Ex.: Brasil" autocomplete="off">
-        <p class="erro" id="erro-pais"></p>
-
         <label for="data">Data de instalação</label>
         <input id="data" type="date">
         <p class="erro" id="erro-data"></p>
 
-        <label for="apelido">Apelido (opcional)</label>
-        <input id="apelido" placeholder="Ex.: Jardim" autocomplete="off">
-        <p class="erro" id="erro-apelido"></p>
-
         <div class="acoes">
           <button class="primario" id="salvar">Salvar colmeia</button>
+          <button type="button" class="link" onclick="mostrar('lista')">Cancelar</button>
+        </div>
+      </form>
+
+    </section>
+
+    <!-- ========== TELA 3: CADASTRO DE APIÁRIO ========== -->
+    <section id="tela-apiario" hidden>
+
+      <button class="voltar" onclick="mostrar('lista')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H4" /><path d="M11 5l-7 7 7 7" /></svg>
+        Voltar para as colmeias
+      </button>
+
+      <form class="form" id="form-apiario" novalidate>
+        <h1>Cadastrar apiário</h1>
+        <p class="suave">O apiário é o local onde ficam as suas colmeias.</p>
+
+        <label for="apiario-nome">Nome do apiário</label>
+        <input id="apiario-nome" placeholder="Ex.: Sítio Boa Vista" autocomplete="off">
+        <p class="erro" id="erro-apiario-nome"></p>
+
+        <label for="apiario-local">Localização (opcional)</label>
+        <input id="apiario-local" placeholder="Ex.: Campinas - SP">
+        <p class="erro" id="erro-apiario-local"></p>
+
+        <div class="acoes">
+          <button class="primario" id="salvar-apiario">Salvar apiário</button>
           <button type="button" class="link" onclick="mostrar('lista')">Cancelar</button>
         </div>
       </form>
@@ -99,7 +116,7 @@
 
   <script src="js/auth.js"></script>
 
-  <script src="js/dados.js"></script>
+  <script src="js/api.js"></script>
 
   <script src="js/colmeias.js"></script>
 
