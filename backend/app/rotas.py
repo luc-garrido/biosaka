@@ -1,4 +1,5 @@
 import secrets
+from dataclasses import asdict
 from datetime import datetime
 from typing import Annotated
 
@@ -13,6 +14,7 @@ from .config import API_TOKEN
 from .schemas import (ApiarioInput, ApiarioOutput, ColmeiaInput, ColmeiaOutput,
                       InspecaoInput, InspecaoOutput, LoginInput, PaginaLeituras,
                       SerieOutput, TokenOutput, UsuarioInput, UsuarioOutput)
+from .servicos import diagnosticar_colmeia
 
 cabecalho = APIKeyHeader(name="X-API-Key", auto_error=False)
 
@@ -127,6 +129,17 @@ def listar_colmeias(db: DB, apiario_id: int | None = Query(None, gt=0),
 @roteador.get("/colmeias/{colmeia_id}", response_model=ColmeiaOutput, tags=["Colmeias"])
 def buscar_colmeia(colmeia_id: int, db: DB):
     return obter(db, Colmeia, colmeia_id)
+
+
+@roteador.get("/colmeias/{colmeia_id}/diagnostico", tags=["Colmeias"])
+def diagnostico_colmeia(colmeia_id: int, db: DB, data_referencia: datetime | None = None):
+    """Executa o motor biologico sobre as leituras da colmeia.
+
+    Sem data_referencia, usa a ultima leitura da serie de peso (o dataset e de 2017).
+    Clima nao e consultado: apiarios ainda nao guardam coordenadas.
+    """
+    obter(db, Colmeia, colmeia_id)
+    return asdict(diagnosticar_colmeia(db, colmeia_id, data_referencia))
 
 
 @roteador.put("/colmeias/{colmeia_id}", response_model=ColmeiaOutput, tags=["Colmeias"])

@@ -75,8 +75,8 @@ async function carregarDiagnostico() {
   try {
     const d = await requisitar("/colmeias/" + id + "/diagnostico");
     const cor = String(d.semaforo || "").toLowerCase();
-    const regras = (d.detalhes_regras || []).filter(r => r.disparou !== false).map(r =>
-      `<li>${esc(r.motivo || "")}${r.acao_sugerida ? " — " + esc(r.acao_sugerida) : ""}</li>`).join("");
+    const regras = (d.detalhes_regras || []).map(r =>
+      `<li><strong>${esc(r.semaforo || "")}</strong> ${esc(r.motivo || "")}${r.acao_sugerida ? " — " + esc(r.acao_sugerida) : ""}</li>`).join("");
     $("diagnostico").innerHTML = `<div class="semaforo ${esc(cor)}">${esc(d.semaforo || "—")}</div>
       <p>${esc(d.frase_modo_avo || "")}</p>
       ${regras ? `<ul>${regras}</ul>` : ""}
@@ -185,6 +185,7 @@ $("fim-grafico").onchange = () => serie && desenhar(Number($("grafico").dataset.
 function itemInspecao(i) {
   return `<li><span>${formatarData(i.data_inspecao)}</span><div>
     Enxame ${TEXTOS[i.forca_enxame]} · postura ${TEXTOS[i.postura]} · reserva ${TEXTOS[i.reserva_alimentar]}
+    ${i.houve_manejo ? " · <strong>com manejo</strong>" : ""}
     ${i.observacoes ? "<br>" + esc(i.observacoes) : ""}</div></li>`;
 }
 
@@ -215,7 +216,8 @@ $("form-inspecao").onsubmit = async e => {
   try {
     await requisitar("/inspecoes", "POST", {
       colmeia_id: id, data_inspecao: data, forca_enxame: $("forca").value,
-      postura: $("postura").value, reserva_alimentar: $("reserva").value, observacoes
+      postura: $("postura").value, reserva_alimentar: $("reserva").value, observacoes,
+      houve_manejo: $("houve-manejo").checked
     });
     $("form-inspecao").reset();
     toast("Inspeção registrada!", true);
