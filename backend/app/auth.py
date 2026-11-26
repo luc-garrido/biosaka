@@ -48,9 +48,9 @@ def criar_token(usuario_id: int):
     Conteudo = {
         "sub": str(usuario_id),
         "iat": agora,
-        "exp": agora + timedelta(minutes=30),
-        "iss": "biosaka",
-        "aud": "biosaka-api",
+        "exp": agora + timedelta(minutes=TOKEN_MINUTOS),
+        "iss": EMISSOR_JWT,
+        "aud": AUDIENCIA_JWT,
     }
 
     return jwt.encode(Conteudo, JWT_SECRET, algorithm=JWT_ALGORITMO)
