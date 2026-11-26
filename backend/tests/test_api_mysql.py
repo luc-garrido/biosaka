@@ -108,3 +108,14 @@ def test_login_devolve_token_e_token_invalido_e_recusado(client):
     assert client.get("/colmeias", headers={"Authorization": "Bearer invalido"}).status_code == 401
     assert client.post("/auth/login", json={"email": email, "senha": "senha-errada-123"}).status_code == 401
     assert client.post("/auth/login", json={"email": "ninguem@teste.com", "senha": "qualquer-1"}).status_code == 401
+
+
+def test_diagnostico_sem_leituras_nao_recomenda_colheita(client, colmeia):
+    resposta = client.get(f"/colmeias/{colmeia['id']}/diagnostico")
+    assert resposta.status_code == 200, resposta.text
+    corpo = resposta.json()
+    assert corpo["semaforo"] in {"VERDE", "AMARELO", "VERMELHO"}
+    assert corpo["confianca"] == "BAIXA"
+    colheita = next(r for r in corpo["detalhes_regras"] if r["codigo"] == "RF03")
+    assert colheita["disparou"] is False
+    assert client.get("/colmeias/999999999/diagnostico").status_code == 404
