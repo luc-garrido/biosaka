@@ -1,12 +1,10 @@
-// Biosaka - Lógica da página de login
+// Biosaka - Lógica da página de login (POST /api/auth/login)
 
 
 // ---------- Funções auxiliares ----------
 
 // Atalho para document.getElementById
 const $ = id => document.getElementById(id);
-
-const campos = ["identificador", "senha"];
 
 // Mostra ou limpa o erro de um campo
 function marcar(campo, mensagem) {
@@ -21,38 +19,45 @@ if (new URLSearchParams(location.search).get("cadastro") === "ok") {
   $("aviso").hidden = false;
 }
 
+// Já logado? Vai direto para as colmeias
+if (token() && usuarioLogado()) location.replace("colmeias.html");
+
 
 // ---------- Envio do formulário ----------
 
-$("form").onsubmit = e => {
+$("form").onsubmit = async e => {
   e.preventDefault();
   $("erro-geral").textContent = "";
 
-  // Sem autocorreção: nada é cortado, o valor vale exatamente como digitado
-  const identificador = $("identificador").value;
+  // Sem autocorreção: o valor vale exatamente como digitado
+  const email = $("email").value;
   const senha = $("senha").value;
 
-  marcar("identificador", !identificador.trim()
-    ? "Informe seu nome de usuário ou e-mail."
-    : identificador !== identificador.trim()
+  marcar("email", !email.trim()
+    ? "Informe seu e-mail."
+    : email !== email.trim()
       ? "Remova os espaços no início ou no fim."
-      : "");
+      : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+        ? "Digite um e-mail válido (ex.: nome@email.com)."
+        : "");
   marcar("senha", senha ? "" : "Informe sua senha.");
-  if (!identificador.trim() || identificador !== identificador.trim() || !senha) return;
+  if ($("erro-email").textContent || !senha) return;
 
-  // Procura uma conta pelo nome de usuário ou pelo e-mail
-  const texto = identificador.toLowerCase();
-  const conta = lerContas().find(c =>
-    c.usuario.toLowerCase() === texto || c.email.toLowerCase() === texto
-  );
-
-  if (!conta || conta.senha !== senha) {
-    $("identificador").setAttribute("aria-invalid", "");
+  const botao = $("entrar");
+  botao.disabled = true;
+  botao.textContent = "Entrando...";
+  try {
+    await entrar(email, senha);
+    location.href = "colmeias.html";
+  } catch (erro) {
+    // 401 (senha errada) e 422 (senha curta demais) recebem a mesma mensagem
+    $("erro-geral").textContent = erro.status === 401 || erro.status === 422
+      ? "E-mail ou senha incorretos."
+      : erro.message;
+    $("email").setAttribute("aria-invalid", "");
     $("senha").setAttribute("aria-invalid", "");
-    $("erro-geral").textContent = "Usuário ou senha incorretos.";
-    return;
+  } finally {
+    botao.disabled = false;
+    botao.textContent = "Entrar";
   }
-
-  iniciarSessao(conta.usuario);
-  location.href = "colmeias.html";
 };

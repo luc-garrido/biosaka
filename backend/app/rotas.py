@@ -1,4 +1,5 @@
 import secrets
+from dataclasses import asdict
 from datetime import datetime
 from typing import Annotated
 
@@ -7,12 +8,13 @@ from fastapi.security import APIKeyHeader
 from sqlalchemy import func, inspect, select, text
 from sqlalchemy.orm import Session
 
-from .auth import gerar_hash
+from .auth import criar_token, gerar_hash, token_se_enviado, verificar_senha
 from .banco import Apiario, Base, Colmeia, Inspecao, Leitura, SerieDataset, Usuario, get_db
 from .config import API_TOKEN
 from .schemas import (ApiarioInput, ApiarioOutput, ColmeiaInput, ColmeiaOutput,
-                      InspecaoInput, InspecaoOutput, PaginaLeituras, SerieOutput,
-                      UsuarioInput, UsuarioOutput)
+                      InspecaoInput, InspecaoOutput, LoginInput, PaginaLeituras,
+                      SerieOutput, TokenOutput, UsuarioInput, UsuarioOutput)
+from .servicos import diagnosticar_colmeia
 
 cabecalho = APIKeyHeader(name="X-API-Key", auto_error=False)
 
@@ -23,7 +25,7 @@ def chave_local(chave: str | None = Depends(cabecalho)):
         raise HTTPException(401, "Chave de acesso invalida.")
 
 
-roteador = APIRouter(dependencies=[Depends(chave_local)])
+roteador = APIRouter(dependencies=[Depends(chave_local), Depends(token_se_enviado)])
 DB = Annotated[Session, Depends(get_db)]
 Limite = Annotated[int, Query(ge=1, le=1000)]
 Offset = Annotated[int, Query(ge=0, le=10000000)]
@@ -62,6 +64,14 @@ def cadastrar_usuario(dados: UsuarioInput, db: DB):
     campos = dados.model_dump(exclude={"senha"})
     campos["senha_hash"] = gerar_hash(dados.senha.get_secret_value())
     return salvar(db, Usuario(**campos))
+
+
+@roteador.post("/auth/login", response_model=TokenOutput, tags=["Usuarios"])
+def entrar(dados: LoginInput, db: DB):
+    usuario = db.scalar(select(Usuario).where(Usuario.email == dados.email))
+    if usuario is None or not verificar_senha(dados.senha.get_secret_value(), usuario.senha_hash):
+        raise HTTPException(401, "E-mail ou senha incorretos.")
+    return {"access_token": criar_token(usuario.id), "usuario": usuario}
 
 
 @roteador.get("/usuarios", response_model=list[UsuarioOutput], tags=["Usuarios"])
@@ -119,6 +129,17 @@ def listar_colmeias(db: DB, apiario_id: int | None = Query(None, gt=0),
 @roteador.get("/colmeias/{colmeia_id}", response_model=ColmeiaOutput, tags=["Colmeias"])
 def buscar_colmeia(colmeia_id: int, db: DB):
     return obter(db, Colmeia, colmeia_id)
+
+
+@roteador.get("/colmeias/{colmeia_id}/diagnostico", tags=["Colmeias"])
+def diagnostico_colmeia(colmeia_id: int, db: DB, data_referencia: datetime | None = None):
+    """Executa o motor biologico sobre as leituras da colmeia.
+
+    Sem data_referencia, usa a ultima leitura da serie de peso (o dataset e de 2017).
+    Clima nao e consultado: apiarios ainda nao guardam coordenadas.
+    """
+    obter(db, Colmeia, colmeia_id)
+    return asdict(diagnosticar_colmeia(db, colmeia_id, data_referencia))
 
 
 @roteador.put("/colmeias/{colmeia_id}", response_model=ColmeiaOutput, tags=["Colmeias"])

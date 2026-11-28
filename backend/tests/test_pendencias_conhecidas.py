@@ -36,15 +36,11 @@ def test_cadastro_no_formato_do_frontend_e_aceito_pela_api(client):
     assert client.post("/usuarios", json=corpo).status_code == 201
 
 
-@pendente("auth.py implementa scrypt e JWT (criar_token/usuario_atual) e schemas.py tem "
-          "LoginInput/TokenOutput, mas nenhuma rota de login foi publicada.")
 def test_existe_rota_de_login_na_api(client):
     caminhos = client.get("/openapi.json").json()["paths"]
     assert any("login" in c or "token" in c for c in caminhos)
 
 
-@pendente("motor/ e servicos.diagnosticar_colmeia funcionam, mas nenhuma rota os expoe: "
-          "o diagnostico (semaforo) ainda nao chega ao usuario.")
 def test_existe_rota_que_expoe_o_diagnostico_da_colmeia(client):
     caminhos = client.get("/openapi.json").json()["paths"]
     assert any("diagnostico" in c or "semaforo" in c for c in caminhos)
@@ -57,8 +53,6 @@ def test_apiario_guarda_coordenadas_para_consultar_o_clima():
     assert {"latitude", "longitude"} <= set(ApiarioInput.model_fields)
 
 
-@pendente("database/v3/.env.example repete BIOSAKA_JWT_SECRET e a segunda linha parece um "
-          "segredo real em vez de um texto-modelo; quem copiar o arquivo herda uma chave publica.")
 def test_env_example_so_tem_valores_modelo():
     linhas = (ROOT / "database/v3/.env.example").read_text(encoding="utf-8").splitlines()
     valores = {}

@@ -111,3 +111,83 @@
     font-size: 17px;
   }
 }
+
+
+/* ---------- Diagnóstico (semáforo) ---------- */
+.semaforo {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  background: #EEE;
+}
+
+.semaforo.verde { background: #DFF3E6; color: var(--verde); }
+.semaforo.amarelo { background: #FFF1CC; color: var(--escuro); }
+.semaforo.vermelho { background: #FBE1DE; color: var(--vermelho); }
+
+
+/* ---------- Gráfico de peso ---------- */
+.periodo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.periodo button[aria-pressed="true"] {
+  background: var(--ambar);
+  color: #fff;
+}
+
+.periodo label {
+  font-size: 15px;
+  color: var(--suave);
+}
+
+.grafico {
+  position: relative;
+  height: 320px;
+  margin-top: 8px;
+}
+
+
+/* ---------- Formulário de inspeção ---------- */
+.form-inspecao {
+  display: grid;
+  gap: 4px;
+  max-width: 480px;
+}
+
+.form-inspecao label {
+  margin-top: 8px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.form-inspecao input,
+.form-inspecao select,
+.form-inspecao textarea {
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+}
+
+.form-inspecao button {
+  margin-top: 12px;
+  justify-self: start;
+}
+
+.form-inspecao .campo-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.form-inspecao .campo-check input {
+  width: auto;
+  margin: 0;
+}
